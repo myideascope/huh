@@ -1,0 +1,167 @@
+{
+  "identity": {
+    "name": "E1",
+    "persona": "The Anti-AI Designer",
+    "principles": [
+      "Fusion over Imitation",
+      "Emotion First",
+      "Content is King",
+      "Zoom In",
+      "Negative Space",
+      "Contrast"
+    ]
+  },
+  "project_context": {
+    "app_name": "AudioForge",
+    "app_type": "dashboard",
+    "emotional_tone": "Precision, Technical, Immersive, Control",
+    "target_audience": "Audio enthusiasts, accessibility users, podcasters",
+    "visual_archetype": "The Control Room (Mode B)",
+    "theme_strategy": "System Preference (Dark Mode Optimized for Pro Feel)"
+  },
+  "design_system": {
+    "typography": {
+      "font_family": {
+        "headings": "JetBrains Mono, monospace",
+        "body": "Manrope, sans-serif",
+        "data": "JetBrains Mono, monospace"
+      },
+      "weights": {
+        "headings": "700",
+        "body": "400",
+        "bold": "600"
+      },
+      "sizes": {
+        "h1": "text-4xl md:text-5xl tracking-tight",
+        "h2": "text-2xl md:text-3xl tracking-tight",
+        "h3": "text-xl font-bold uppercase tracking-widest",
+        "body": "text-base leading-relaxed",
+        "label": "text-xs font-bold uppercase tracking-wider text-muted-foreground"
+      }
+    },
+    "colors": {
+      "palette_name": "Neon Signal",
+      "base": {
+        "light": "#f4f4f5",
+        "dark": "#09090b"
+      },
+      "surface": {
+        "light": "#ffffff",
+        "dark": "#18181b"
+      },
+      "primary": {
+        "hex": "#22c55e",
+        "tailwind": "green-500",
+        "usage": "Active states, 'Good' signals, Play buttons"
+      },
+      "secondary": {
+        "hex": "#3b82f6",
+        "tailwind": "blue-500",
+        "usage": "Data visualization, Spectrum lines"
+      },
+      "accent": {
+        "hex": "#f59e0b",
+        "tailwind": "amber-500",
+        "usage": "Clipping warnings, High gain indicators"
+      },
+      "destructive": {
+        "hex": "#ef4444",
+        "tailwind": "red-500",
+        "usage": "Stop recording, Error states"
+      },
+      "border": {
+        "light": "rgba(0,0,0,0.1)",
+        "dark": "rgba(255,255,255,0.1)"
+      }
+    },
+    "spacing": {
+      "container_padding": "p-6 md:p-8 lg:p-12",
+      "element_gap": "gap-6",
+      "section_gap": "gap-12"
+    },
+    "layout": {
+      "grid_mode": "Mode B: The Control Room",
+      "columns": "grid-cols-1 md:grid-cols-12",
+      "gap": "gap-6"
+    },
+    "surfaces": {
+      "card": "bg-card border border-border/50 shadow-sm rounded-xl",
+      "glass": "bg-background/80 backdrop-blur-xl border border-white/10",
+      "active_item": "bg-primary/10 border-primary/50 text-primary"
+    },
+    "motion": {
+      "hover": "transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md",
+      "click": "active:scale-95 duration-75",
+      "enter": "animate-in fade-in slide-in-from-bottom-4 duration-500"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(34,197,94,0.3)] rounded-full px-8 py-2 font-bold tracking-wide uppercase text-sm",
+      "secondary": "bg-secondary/10 text-secondary hover:bg-secondary/20 border border-secondary/20 rounded-full px-6 py-2 font-medium text-sm",
+      "ghost": "hover:bg-accent hover:text-accent-foreground rounded-md px-4 py-2"
+    },
+    "inputs": {
+      "slider": "w-full h-2 bg-secondary/20 rounded-lg appearance-none cursor-pointer accent-primary",
+      "select": "bg-background border border-input hover:border-primary/50 focus:ring-2 focus:ring-primary/20 rounded-md px-3 py-2 text-sm"
+    },
+    "visualizer": {
+      "container": "relative w-full h-64 bg-black/90 rounded-xl overflow-hidden border border-white/10 shadow-inner",
+      "canvas": "absolute inset-0 w-full h-full"
+    }
+  },
+  "layout_structure": {
+    "header": {
+      "grid_area": "col-span-full",
+      "style": "flex justify-between items-center mb-8 border-b border-border/40 pb-6"
+    },
+    "device_selector": {
+      "grid_area": "col-span-full md:col-span-4 lg:col-span-3",
+      "style": "flex flex-col gap-4 p-6 bg-card rounded-xl border border-border/50"
+    },
+    "equalizer": {
+      "grid_area": "col-span-full md:col-span-8 lg:col-span-9",
+      "style": "grid grid-cols-5 gap-4 p-6 bg-card rounded-xl border border-border/50 items-end h-64"
+    },
+    "visualizer_panel": {
+      "grid_area": "col-span-full lg:col-span-8 row-span-2",
+      "style": "relative h-96 bg-black rounded-2xl border border-white/10 overflow-hidden shadow-2xl"
+    },
+    "recording_controls": {
+      "grid_area": "col-span-full md:col-span-6 lg:col-span-4",
+      "style": "flex flex-col gap-4 p-6 bg-card rounded-xl border border-border/50"
+    },
+    "logs": {
+      "grid_area": "col-span-full md:col-span-6 lg:col-span-4",
+      "style": "h-64 overflow-y-auto font-mono text-xs p-4 bg-black/50 rounded-xl border border-white/5"
+    }
+  },
+  "assets": {
+    "icons": "lucide-react",
+    "images": [
+      {
+        "category": "background_texture",
+        "url": "https://images.unsplash.com/photo-1759771963975-8a4885446f1f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMHNvdW5kJTIwd2F2ZSUyMG5lb258ZW58MHx8fHwxNzY3OTk4ODE4fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Abstract neon rings for empty state or hero background"
+      }
+    ]
+  },
+  "implementation_rules": {
+    "framework": "React (Create React App structure)",
+    "styling": "Tailwind CSS + Shadcn UI (customized)",
+    "file_extension": ".js or .jsx (NOT .tsx)",
+    "state_management": "React Context or Zustand (for audio state)",
+    "audio_engine": "Web Audio API (AudioContext, AnalyserNode, BiquadFilterNode)",
+    "visualization": "HTML5 Canvas API (requestAnimationFrame)",
+    "accessibility": "All interactive elements must have aria-labels and data-testid attributes"
+  },
+  "universal_guidelines": [
+    "Do not use gradients for dark colors.",
+    "Avoid generic centered layouts.",
+    "Use glassmorphism with backdrop-blur-xl.",
+    "Do not use 'transition: all'.",
+    "Do not center align the App container.",
+    "Use 'sonner' for toasts.",
+    "Ensure all interactive elements have data-testid."
+  ]
+}
