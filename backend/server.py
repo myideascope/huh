@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,10 +6,9 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone
-
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,52 +18,271 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
+# Create the main app
+app = FastAPI(title="AudioForge API", version="1.0.0")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
+# =============== MODELS ===============
+
+class EqualizerSettings(BaseModel):
+    band_60hz: float = Field(default=0, ge=-12, le=12)
+    band_230hz: float = Field(default=0, ge=-12, le=12)
+    band_910hz: float = Field(default=0, ge=-12, le=12)
+    band_3600hz: float = Field(default=0, ge=-12, le=12)
+    band_14000hz: float = Field(default=0, ge=-12, le=12)
+
+class AdvancedFilters(BaseModel):
+    noise_reduction: float = Field(default=0, ge=0, le=100)
+    voice_isolation: float = Field(default=0, ge=0, le=100)
+    gain: float = Field(default=1, ge=0.1, le=5)
+    highpass_enabled: bool = Field(default=False)
+    highpass_frequency: float = Field(default=80, ge=20, le=500)
+    lowpass_enabled: bool = Field(default=False)
+    lowpass_frequency: float = Field(default=16000, ge=1000, le=20000)
+
+class PresetCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    description: Optional[str] = Field(default="")
+    equalizer: EqualizerSettings = Field(default_factory=EqualizerSettings)
+    advanced: AdvancedFilters = Field(default_factory=AdvancedFilters)
+
+class Preset(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
+    name: str
+    description: Optional[str] = ""
+    equalizer: EqualizerSettings
+    advanced: AdvancedFilters
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class LogEntry(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    level: str = Field(default="info")  # info, warning, error, success
+    message: str
+    details: Optional[Dict[str, Any]] = None
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class LogEntryCreate(BaseModel):
+    level: str = Field(default="info")
+    message: str
+    details: Optional[Dict[str, Any]] = None
 
-# Add your routes to the router instead of directly to app
+class RecordingMetadata(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    filename: str
+    format: str  # wav or mp3
+    duration_seconds: float
+    file_size_bytes: int
+    preset_used: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class RecordingMetadataCreate(BaseModel):
+    filename: str
+    format: str
+    duration_seconds: float
+    file_size_bytes: int
+    preset_used: Optional[str] = None
+
+# =============== ROUTES ===============
+
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "AudioForge API v1.0.0", "status": "operational"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+@api_router.get("/health")
+async def health_check():
+    try:
+        await db.command("ping")
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+# =============== PRESETS ===============
+
+@api_router.post("/presets", response_model=Preset)
+async def create_preset(preset_data: PresetCreate):
+    try:
+        preset = Preset(
+            name=preset_data.name,
+            description=preset_data.description,
+            equalizer=preset_data.equalizer,
+            advanced=preset_data.advanced
+        )
+        
+        doc = preset.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        doc['updated_at'] = doc['updated_at'].isoformat()
+        
+        await db.presets.insert_one(doc)
+        logger.info(f"Created preset: {preset.name} (id: {preset.id})")
+        return preset
+    except Exception as e:
+        logger.error(f"Failed to create preset: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/presets", response_model=List[Preset])
+async def get_presets():
+    try:
+        presets = await db.presets.find({}, {"_id": 0}).to_list(100)
+        for preset in presets:
+            if isinstance(preset.get('created_at'), str):
+                preset['created_at'] = datetime.fromisoformat(preset['created_at'])
+            if isinstance(preset.get('updated_at'), str):
+                preset['updated_at'] = datetime.fromisoformat(preset['updated_at'])
+        return presets
+    except Exception as e:
+        logger.error(f"Failed to fetch presets: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/presets/{preset_id}", response_model=Preset)
+async def get_preset(preset_id: str):
+    try:
+        preset = await db.presets.find_one({"id": preset_id}, {"_id": 0})
+        if not preset:
+            raise HTTPException(status_code=404, detail="Preset not found")
+        if isinstance(preset.get('created_at'), str):
+            preset['created_at'] = datetime.fromisoformat(preset['created_at'])
+        if isinstance(preset.get('updated_at'), str):
+            preset['updated_at'] = datetime.fromisoformat(preset['updated_at'])
+        return preset
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch preset {preset_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/presets/{preset_id}", response_model=Preset)
+async def update_preset(preset_id: str, preset_data: PresetCreate):
+    try:
+        existing = await db.presets.find_one({"id": preset_id}, {"_id": 0})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Preset not found")
+        
+        update_data = preset_data.model_dump()
+        update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+        
+        await db.presets.update_one({"id": preset_id}, {"$set": update_data})
+        
+        updated = await db.presets.find_one({"id": preset_id}, {"_id": 0})
+        if isinstance(updated.get('created_at'), str):
+            updated['created_at'] = datetime.fromisoformat(updated['created_at'])
+        if isinstance(updated.get('updated_at'), str):
+            updated['updated_at'] = datetime.fromisoformat(updated['updated_at'])
+        
+        logger.info(f"Updated preset: {preset_id}")
+        return updated
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update preset {preset_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/presets/{preset_id}")
+async def delete_preset(preset_id: str):
+    try:
+        result = await db.presets.delete_one({"id": preset_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Preset not found")
+        logger.info(f"Deleted preset: {preset_id}")
+        return {"message": "Preset deleted successfully", "id": preset_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete preset {preset_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# =============== LOGS ===============
+
+@api_router.post("/logs", response_model=LogEntry)
+async def create_log_entry(log_data: LogEntryCreate):
+    try:
+        log_entry = LogEntry(
+            level=log_data.level,
+            message=log_data.message,
+            details=log_data.details
+        )
+        
+        doc = log_entry.model_dump()
+        doc['timestamp'] = doc['timestamp'].isoformat()
+        
+        await db.logs.insert_one(doc)
+        return log_entry
+    except Exception as e:
+        logger.error(f"Failed to create log entry: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/logs", response_model=List[LogEntry])
+async def get_logs(limit: int = 50):
+    try:
+        logs = await db.logs.find({}, {"_id": 0}).sort("timestamp", -1).to_list(limit)
+        for log in logs:
+            if isinstance(log.get('timestamp'), str):
+                log['timestamp'] = datetime.fromisoformat(log['timestamp'])
+        return logs
+    except Exception as e:
+        logger.error(f"Failed to fetch logs: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/logs")
+async def clear_logs():
+    try:
+        result = await db.logs.delete_many({})
+        logger.info(f"Cleared {result.deleted_count} log entries")
+        return {"message": f"Cleared {result.deleted_count} log entries"}
+    except Exception as e:
+        logger.error(f"Failed to clear logs: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# =============== RECORDINGS ===============
+
+@api_router.post("/recordings", response_model=RecordingMetadata)
+async def save_recording_metadata(recording_data: RecordingMetadataCreate):
+    try:
+        recording = RecordingMetadata(
+            filename=recording_data.filename,
+            format=recording_data.format,
+            duration_seconds=recording_data.duration_seconds,
+            file_size_bytes=recording_data.file_size_bytes,
+            preset_used=recording_data.preset_used
+        )
+        
+        doc = recording.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        
+        await db.recordings.insert_one(doc)
+        logger.info(f"Saved recording metadata: {recording.filename}")
+        return recording
+    except Exception as e:
+        logger.error(f"Failed to save recording metadata: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/recordings", response_model=List[RecordingMetadata])
+async def get_recordings(limit: int = 50):
+    try:
+        recordings = await db.recordings.find({}, {"_id": 0}).sort("created_at", -1).to_list(limit)
+        for rec in recordings:
+            if isinstance(rec.get('created_at'), str):
+                rec['created_at'] = datetime.fromisoformat(rec['created_at'])
+        return recordings
+    except Exception as e:
+        logger.error(f"Failed to fetch recordings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Include the router in the main app
 app.include_router(api_router)
@@ -76,13 +294,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

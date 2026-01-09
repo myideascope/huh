@@ -1,54 +1,52 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import React, { useEffect } from 'react';
+import '@/App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AudioEngineProvider } from './contexts/AudioContext';
+import Dashboard from './components/Dashboard';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+// Detect system theme preference
+const getSystemTheme = () => {
+    if (typeof window !== 'undefined') {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
-  };
+    return 'dark';
+};
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
+// Apply theme to document
+const applyTheme = (theme) => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+        root.classList.add('dark');
+    } else {
+        root.classList.remove('dark');
+    }
 };
 
 function App() {
-  return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
-  );
+    useEffect(() => {
+        // Apply initial theme
+        const theme = getSystemTheme();
+        applyTheme(theme);
+
+        // Listen for system theme changes
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = (e) => {
+            applyTheme(e.matches ? 'dark' : 'light');
+        };
+
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, []);
+
+    return (
+        <AudioEngineProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                </Routes>
+            </BrowserRouter>
+        </AudioEngineProvider>
+    );
 }
 
 export default App;
