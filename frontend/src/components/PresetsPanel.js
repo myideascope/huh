@@ -115,7 +115,9 @@ const PresetsPanel = () => {
         },
     ];
 
-    const allPresets = [...defaultPresets, ...presets];
+    // Filter out any user presets that might have conflicting IDs with defaults
+    const filteredUserPresets = presets.filter(p => !p.id.startsWith('default-'));
+    const allPresets = [...defaultPresets, ...filteredUserPresets];
 
     return (
         <div className="control-card space-y-4" data-testid="presets-panel">
