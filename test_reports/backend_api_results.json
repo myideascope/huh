@@ -1,0 +1,413 @@
+{
+  "timestamp": "2026-01-09T22:54:00.531897",
+  "total_tests": 19,
+  "passed_tests": 19,
+  "success_rate": 100.0,
+  "test_results": [
+    {
+      "test_name": "Root Endpoint",
+      "success": true,
+      "details": {
+        "method": "GET",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": {
+          "message": "AudioForge API v1.0.0",
+          "status": "operational"
+        }
+      }
+    },
+    {
+      "test_name": "Health Check",
+      "success": true,
+      "details": {
+        "method": "GET",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/health",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": {
+          "status": "healthy",
+          "database": "connected"
+        }
+      }
+    },
+    {
+      "test_name": "Get Empty Presets",
+      "success": true,
+      "details": {
+        "method": "GET",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": []
+      }
+    },
+    {
+      "test_name": "Create Preset",
+      "success": true,
+      "details": {
+        "method": "POST",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": {
+          "id": "e7ae8d30-114c-455b-ba0e-a59022bd112c",
+          "name": "Test Preset",
+          "description": "Test preset for API testing",
+          "equalizer": {
+            "band_60hz": 2.5,
+            "band_230hz": -1.0,
+            "band_910hz": 3.0,
+            "band_3600hz": -2.0,
+            "band_14000hz": 1.5
+          },
+          "advanced": {
+            "noise_reduction": 25.0,
+            "voice_isolation": 50.0,
+            "gain": 2.0,
+            "highpass_enabled": true,
+            "highpass_frequency": 100.0,
+            "lowpass_enabled": false,
+            "lowpass_frequency": 15000.0
+          },
+          "created_at": "2026-01-09T22:53:59.924236Z",
+          "updated_at": "2026-01-09T22:53:59.924239Z"
+        }
+      }
+    },
+    {
+      "test_name": "Get Specific Preset",
+      "success": true,
+      "details": {
+        "method": "GET",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/e7ae8d30-114c-455b-ba0e-a59022bd112c",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": {
+          "id": "e7ae8d30-114c-455b-ba0e-a59022bd112c",
+          "name": "Test Preset",
+          "description": "Test preset for API testing",
+          "equalizer": {
+            "band_60hz": 2.5,
+            "band_230hz": -1.0,
+            "band_910hz": 3.0,
+            "band_3600hz": -2.0,
+            "band_14000hz": 1.5
+          },
+          "advanced": {
+            "noise_reduction": 25.0,
+            "voice_isolation": 50.0,
+            "gain": 2.0,
+            "highpass_enabled": true,
+            "highpass_frequency": 100.0,
+            "lowpass_enabled": false,
+            "lowpass_frequency": 15000.0
+          },
+          "created_at": "2026-01-09T22:53:59.924236Z",
+          "updated_at": "2026-01-09T22:53:59.924239Z"
+        }
+      }
+    },
+    {
+      "test_name": "Update Preset",
+      "success": true,
+      "details": {
+        "method": "PUT",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/e7ae8d30-114c-455b-ba0e-a59022bd112c",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": {
+          "id": "e7ae8d30-114c-455b-ba0e-a59022bd112c",
+          "name": "Updated Test Preset",
+          "description": "Test preset for API testing",
+          "equalizer": {
+            "band_60hz": 5.0,
+            "band_230hz": -1.0,
+            "band_910hz": 3.0,
+            "band_3600hz": -2.0,
+            "band_14000hz": 1.5
+          },
+          "advanced": {
+            "noise_reduction": 25.0,
+            "voice_isolation": 50.0,
+            "gain": 2.0,
+            "highpass_enabled": true,
+            "highpass_frequency": 100.0,
+            "lowpass_enabled": false,
+            "lowpass_frequency": 15000.0
+          },
+          "created_at": "2026-01-09T22:53:59.924236Z",
+          "updated_at": "2026-01-09T22:54:00.006789Z"
+        }
+      }
+    },
+    {
+      "test_name": "Get All Presets",
+      "success": true,
+      "details": {
+        "method": "GET",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": [
+          {
+            "id": "e7ae8d30-114c-455b-ba0e-a59022bd112c",
+            "name": "Updated Test Preset",
+            "description": "Test preset for API testing",
+            "equalizer": {
+              "band_60hz": 5.0,
+              "band_230hz": -1.0,
+              "band_910hz": 3.0,
+              "band_3600hz": -2.0,
+              "band_14000hz": 1.5
+            },
+            "advanced": {
+              "noise_reduction": 25.0,
+              "voice_isolation": 50.0,
+              "gain": 2.0,
+              "highpass_enabled": true,
+              "highpass_frequency": 100.0,
+              "lowpass_enabled": false,
+              "lowpass_frequency": 15000.0
+            },
+            "created_at": "2026-01-09T22:53:59.924236Z",
+            "updated_at": "2026-01-09T22:54:00.006789Z"
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "Delete Preset",
+      "success": true,
+      "details": {
+        "method": "DELETE",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/e7ae8d30-114c-455b-ba0e-a59022bd112c",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": {
+          "message": "Preset deleted successfully",
+          "id": "e7ae8d30-114c-455b-ba0e-a59022bd112c"
+        }
+      }
+    },
+    {
+      "test_name": "Get Deleted Preset",
+      "success": true,
+      "details": {
+        "method": "GET",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/e7ae8d30-114c-455b-ba0e-a59022bd112c",
+        "expected_status": 404,
+        "actual_status": 404,
+        "response": {
+          "detail": "Preset not found"
+        }
+      }
+    },
+    {
+      "test_name": "Create Log Entry",
+      "success": true,
+      "details": {
+        "method": "POST",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/logs",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": {
+          "id": "49e98b41-50e5-4879-a155-17d0a85c79cb",
+          "timestamp": "2026-01-09T22:54:00.157241Z",
+          "level": "info",
+          "message": "Test log entry from API test",
+          "details": {
+            "test_run": true,
+            "timestamp": "2026-01-09T22:54:00.126591"
+          }
+        }
+      }
+    },
+    {
+      "test_name": "Get Logs",
+      "success": true,
+      "details": {
+        "method": "GET",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/logs",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": [
+          {
+            "id": "49e98b41-50e5-4879-a155-17d0a85c79cb",
+            "timestamp": "2026-01-09T22:54:00.157241Z",
+            "level": "info",
+            "message": "Test log entry from API test",
+            "details": {
+              "test_run": true,
+              "timestamp": "2026-01-09T22:54:00.126591"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "Get Logs with Limit",
+      "success": true,
+      "details": {
+        "method": "GET",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/logs?limit=10",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": [
+          {
+            "id": "49e98b41-50e5-4879-a155-17d0a85c79cb",
+            "timestamp": "2026-01-09T22:54:00.157241Z",
+            "level": "info",
+            "message": "Test log entry from API test",
+            "details": {
+              "test_run": true,
+              "timestamp": "2026-01-09T22:54:00.126591"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "Clear Logs",
+      "success": true,
+      "details": {
+        "method": "DELETE",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/logs",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": {
+          "message": "Cleared 1 log entries"
+        }
+      }
+    },
+    {
+      "test_name": "Create Recording Metadata",
+      "success": true,
+      "details": {
+        "method": "POST",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/recordings",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": {
+          "id": "b0402655-6e5d-46d6-8776-770c953759c0",
+          "filename": "test-recording-001.wav",
+          "format": "wav",
+          "duration_seconds": 45.5,
+          "file_size_bytes": 1024000,
+          "preset_used": "Test Preset",
+          "created_at": "2026-01-09T22:54:00.307415Z"
+        }
+      }
+    },
+    {
+      "test_name": "Get Recordings",
+      "success": true,
+      "details": {
+        "method": "GET",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/recordings",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": [
+          {
+            "id": "b0402655-6e5d-46d6-8776-770c953759c0",
+            "filename": "test-recording-001.wav",
+            "format": "wav",
+            "duration_seconds": 45.5,
+            "file_size_bytes": 1024000,
+            "preset_used": "Test Preset",
+            "created_at": "2026-01-09T22:54:00.307415Z"
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "Get Recordings with Limit",
+      "success": true,
+      "details": {
+        "method": "GET",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/recordings?limit=5",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": [
+          {
+            "id": "b0402655-6e5d-46d6-8776-770c953759c0",
+            "filename": "test-recording-001.wav",
+            "format": "wav",
+            "duration_seconds": 45.5,
+            "file_size_bytes": 1024000,
+            "preset_used": "Test Preset",
+            "created_at": "2026-01-09T22:54:00.307415Z"
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "Invalid Preset Creation",
+      "success": true,
+      "details": {
+        "method": "POST",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets",
+        "expected_status": 422,
+        "actual_status": 422,
+        "response": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "name"
+              ],
+              "msg": "Field required",
+              "input": {
+                "description": "Missing name field"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "test_name": "Non-existent Preset",
+      "success": true,
+      "details": {
+        "method": "GET",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/non-existent-id",
+        "expected_status": 404,
+        "actual_status": 404,
+        "response": {
+          "detail": "Preset not found"
+        }
+      }
+    },
+    {
+      "test_name": "Invalid EQ Values",
+      "success": true,
+      "details": {
+        "method": "POST",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets",
+        "expected_status": 422,
+        "actual_status": 422,
+        "response": {
+          "detail": [
+            {
+              "type": "less_than_equal",
+              "loc": [
+                "body",
+                "equalizer",
+                "band_60hz"
+              ],
+              "msg": "Input should be less than or equal to 12",
+              "input": 50.0,
+              "ctx": {
+                "le": 12.0
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/less_than_equal"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
