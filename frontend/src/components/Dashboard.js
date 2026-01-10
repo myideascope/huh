@@ -7,6 +7,7 @@ import Visualizer from './Visualizer';
 import RecordingControls from './RecordingControls';
 import PresetsPanel from './PresetsPanel';
 import LogsPanel from './LogsPanel';
+import UserMenu from './UserMenu';
 import { Button } from './ui/button';
 import { Toaster } from './ui/sonner';
 import { toast } from 'sonner';
