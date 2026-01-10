@@ -560,6 +560,7 @@ async def upload_recording(
             "preset_used": preset_used,
             "notes": notes,
             "has_audio_data": True,
+            "user_id": user_id,
             "created_at": created_at
         }
     except HTTPException:
@@ -569,12 +570,23 @@ async def upload_recording(
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/recordings", response_model=List[RecordingMetadata])
-async def get_recordings(limit: int = 50):
-    """Get list of recordings (without audio data for performance)"""
+async def get_recordings(request: Request, limit: int = 50):
+    """Get list of recordings for current user (without audio data for performance)"""
     try:
+        # Get current user if logged in
+        user = await get_current_user(request)
+        
+        # Build query - if logged in, get user's recordings; if guest, get recordings without user_id
+        if user:
+            # Logged in user: get their recordings only
+            query = {"user_id": user.user_id}
+        else:
+            # Guest: get recordings without user_id (guest recordings)
+            query = {"$or": [{"user_id": None}, {"user_id": {"$exists": False}}]}
+        
         # Exclude audio_data from list query for performance
         recordings = await db.recordings.find(
-            {}, 
+            query, 
             {"_id": 0, "audio_data": 0}
         ).sort("created_at", -1).to_list(limit)
         
