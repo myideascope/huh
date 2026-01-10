@@ -447,13 +447,23 @@ export const AudioEngineProvider = ({ children }) => {
     const updateEQ = useCallback((band, value) => {
         setEqSettings(prev => ({ ...prev, [band]: value }));
         
-        // Map band names to filter indices
+        // Map band names to filter indices (15-band)
         const bandMap = {
-            band_60hz: 0,
-            band_230hz: 1,
-            band_910hz: 2,
-            band_3600hz: 3,
-            band_14000hz: 4,
+            band_25hz: 0,
+            band_40hz: 1,
+            band_63hz: 2,
+            band_100hz: 3,
+            band_160hz: 4,
+            band_250hz: 5,
+            band_400hz: 6,
+            band_630hz: 7,
+            band_1000hz: 8,
+            band_1600hz: 9,
+            band_2500hz: 10,
+            band_4000hz: 11,
+            band_6300hz: 12,
+            band_10000hz: 13,
+            band_16000hz: 14,
         };
         
         const filterIndex = bandMap[band];
