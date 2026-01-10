@@ -469,10 +469,18 @@ export const AudioEngineProvider = ({ children }) => {
                 }
                 break;
             case 'noise_reduction':
+                // Update basic noise reduction
                 if (noiseReductionNodeRef.current) {
                     noiseReductionNodeRef.current.port.postMessage({ type: 'setReduction', value });
-                    if (value > 0 && !noiseProfileReady) {
-                        addLog('info', 'Noise reduction enabled - learning noise profile');
+                    if (value > 0 && advancedSettings.noise_reduction_mode === 'basic' && !noiseProfileReady) {
+                        addLog('info', 'Basic noise reduction enabled - learning noise profile');
+                    }
+                }
+                // Update ML noise reduction
+                if (rnnoiseNodeRef.current) {
+                    rnnoiseNodeRef.current.port.postMessage({ type: 'setEnabled', value: value > 0 });
+                    if (value > 0 && advancedSettings.noise_reduction_mode === 'ml') {
+                        addLog('info', 'ML noise reduction (RNNoise) enabled');
                     }
                 }
                 // Reconnect graph if enabling/disabling
@@ -480,6 +488,13 @@ export const AudioEngineProvider = ({ children }) => {
                     setTimeout(() => {
                         if (isListening) connectAudioGraph();
                     }, 50);
+                }
+                break;
+            case 'noise_reduction_mode':
+                // Reconnect graph to switch between basic and ML
+                if (advancedSettings.noise_reduction > 0 && isListening) {
+                    addLog('info', `Switched to ${value === 'ml' ? 'ML (RNNoise)' : 'Basic'} noise reduction`);
+                    setTimeout(() => connectAudioGraph(), 50);
                 }
                 break;
             case 'voice_isolation':
@@ -502,7 +517,7 @@ export const AudioEngineProvider = ({ children }) => {
             default:
                 break;
         }
-    }, [connectAudioGraph, isListening, noiseProfileReady, advancedSettings.noise_reduction, advancedSettings.voice_isolation, addLog]);
+    }, [connectAudioGraph, isListening, noiseProfileReady, advancedSettings.noise_reduction, advancedSettings.voice_isolation, advancedSettings.noise_reduction_mode, addLog]);
 
     // Trigger noise profile re-learning
     const learnNoiseProfile = useCallback(() => {
