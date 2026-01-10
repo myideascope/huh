@@ -73,6 +73,13 @@ Build a browser-based app for PC that allows listening to other peoples conversa
 - [x] Noise profile learning with re-learn capability
 - [x] DSP Active status indicator
 
+### Phase 2.5 - ML Noise Reduction (January 2026)
+- [x] RNNoise WebAssembly integration (@jitsi/rnnoise-wasm)
+- [x] ML-based neural network noise suppression
+- [x] Mode toggle: Basic (spectral gating) vs ML (RNNoise)
+- [x] Voice Activity Detection (VAD) display
+- [x] Automatic model loading on initialization
+
 ### Phase 3 - Recording History (January 2026)
 - [x] Cloud storage for recordings (MongoDB with base64 audio)
 - [x] Recording History dialog with list view
