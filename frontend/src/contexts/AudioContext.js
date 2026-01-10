@@ -10,13 +10,24 @@ export const useAudioEngine = () => {
     return context;
 };
 
-// Default EQ settings
+// Default EQ settings - 15 band graphic equalizer
+// Standard ISO frequencies: 25, 40, 63, 100, 160, 250, 400, 630, 1k, 1.6k, 2.5k, 4k, 6.3k, 10k, 16k Hz
 const DEFAULT_EQ = {
-    band_60hz: 0,
-    band_230hz: 0,
-    band_910hz: 0,
-    band_3600hz: 0,
-    band_14000hz: 0,
+    band_25hz: 0,
+    band_40hz: 0,
+    band_63hz: 0,
+    band_100hz: 0,
+    band_160hz: 0,
+    band_250hz: 0,
+    band_400hz: 0,
+    band_630hz: 0,
+    band_1000hz: 0,
+    band_1600hz: 0,
+    band_2500hz: 0,
+    band_4000hz: 0,
+    band_6300hz: 0,
+    band_10000hz: 0,
+    band_16000hz: 0,
 };
 
 // Default advanced filter settings
