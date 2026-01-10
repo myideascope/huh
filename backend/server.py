@@ -87,10 +87,12 @@ class RecordingMetadata(BaseModel):
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     filename: str
-    format: str  # wav or mp3
+    format: str  # wav or webm
     duration_seconds: float
     file_size_bytes: int
     preset_used: Optional[str] = None
+    has_audio_data: bool = Field(default=False)
+    notes: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class RecordingMetadataCreate(BaseModel):
@@ -99,6 +101,20 @@ class RecordingMetadataCreate(BaseModel):
     duration_seconds: float
     file_size_bytes: int
     preset_used: Optional[str] = None
+    notes: Optional[str] = None
+
+class RecordingWithAudio(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    filename: str
+    format: str
+    duration_seconds: float
+    file_size_bytes: int
+    preset_used: Optional[str] = None
+    notes: Optional[str] = None
+    audio_data: str  # Base64 encoded audio
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 # =============== ROUTES ===============
 
