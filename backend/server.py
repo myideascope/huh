@@ -277,7 +277,9 @@ async def save_recording_metadata(recording_data: RecordingMetadataCreate):
             format=recording_data.format,
             duration_seconds=recording_data.duration_seconds,
             file_size_bytes=recording_data.file_size_bytes,
-            preset_used=recording_data.preset_used
+            preset_used=recording_data.preset_used,
+            notes=recording_data.notes,
+            has_audio_data=False
         )
         
         doc = recording.model_dump()
@@ -290,16 +292,176 @@ async def save_recording_metadata(recording_data: RecordingMetadataCreate):
         logger.error(f"Failed to save recording metadata: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.post("/recordings/upload")
+async def upload_recording(
+    audio_data: str = Form(...),  # Base64 encoded audio
+    filename: str = Form(...),
+    format: str = Form(...),
+    duration_seconds: float = Form(...),
+    file_size_bytes: int = Form(...),
+    preset_used: Optional[str] = Form(None),
+    notes: Optional[str] = Form(None)
+):
+    """Upload a recording with audio data to cloud storage"""
+    try:
+        # Validate base64 data
+        try:
+            # Just verify it's valid base64
+            base64.b64decode(audio_data.split(',')[-1] if ',' in audio_data else audio_data)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid base64 audio data")
+        
+        recording_id = str(uuid.uuid4())
+        created_at = datetime.now(timezone.utc)
+        
+        # Store recording with audio data
+        doc = {
+            "id": recording_id,
+            "filename": filename,
+            "format": format,
+            "duration_seconds": duration_seconds,
+            "file_size_bytes": file_size_bytes,
+            "preset_used": preset_used,
+            "notes": notes,
+            "audio_data": audio_data,
+            "has_audio_data": True,
+            "created_at": created_at.isoformat()
+        }
+        
+        await db.recordings.insert_one(doc)
+        logger.info(f"Uploaded recording with audio: {filename} (ID: {recording_id})")
+        
+        return {
+            "id": recording_id,
+            "filename": filename,
+            "format": format,
+            "duration_seconds": duration_seconds,
+            "file_size_bytes": file_size_bytes,
+            "preset_used": preset_used,
+            "notes": notes,
+            "has_audio_data": True,
+            "created_at": created_at
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to upload recording: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/recordings", response_model=List[RecordingMetadata])
 async def get_recordings(limit: int = 50):
+    """Get list of recordings (without audio data for performance)"""
     try:
-        recordings = await db.recordings.find({}, {"_id": 0}).sort("created_at", -1).to_list(limit)
+        # Exclude audio_data from list query for performance
+        recordings = await db.recordings.find(
+            {}, 
+            {"_id": 0, "audio_data": 0}
+        ).sort("created_at", -1).to_list(limit)
+        
         for rec in recordings:
             if isinstance(rec.get('created_at'), str):
                 rec['created_at'] = datetime.fromisoformat(rec['created_at'])
+            # Ensure has_audio_data field exists
+            if 'has_audio_data' not in rec:
+                rec['has_audio_data'] = False
         return recordings
     except Exception as e:
         logger.error(f"Failed to fetch recordings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/recordings/{recording_id}")
+async def get_recording(recording_id: str):
+    """Get a single recording with metadata (without audio for initial load)"""
+    try:
+        recording = await db.recordings.find_one(
+            {"id": recording_id}, 
+            {"_id": 0, "audio_data": 0}
+        )
+        if not recording:
+            raise HTTPException(status_code=404, detail="Recording not found")
+        
+        if isinstance(recording.get('created_at'), str):
+            recording['created_at'] = datetime.fromisoformat(recording['created_at'])
+        
+        return recording
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch recording {recording_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/recordings/{recording_id}/download")
+async def download_recording(recording_id: str):
+    """Download recording audio data"""
+    try:
+        recording = await db.recordings.find_one({"id": recording_id}, {"_id": 0})
+        if not recording:
+            raise HTTPException(status_code=404, detail="Recording not found")
+        
+        if not recording.get('audio_data'):
+            raise HTTPException(status_code=404, detail="No audio data available for this recording")
+        
+        # Decode base64 audio data
+        audio_base64 = recording['audio_data']
+        # Handle data URL format
+        if ',' in audio_base64:
+            audio_base64 = audio_base64.split(',')[1]
+        
+        audio_bytes = base64.b64decode(audio_base64)
+        
+        # Determine content type
+        format_type = recording.get('format', 'webm')
+        content_type = 'audio/webm' if format_type == 'webm' else 'audio/wav'
+        
+        return Response(
+            content=audio_bytes,
+            media_type=content_type,
+            headers={
+                "Content-Disposition": f"attachment; filename={recording['filename']}"
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to download recording {recording_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/recordings/{recording_id}")
+async def update_recording(recording_id: str, notes: Optional[str] = None):
+    """Update recording notes"""
+    try:
+        existing = await db.recordings.find_one({"id": recording_id}, {"_id": 0})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Recording not found")
+        
+        update_data = {}
+        if notes is not None:
+            update_data['notes'] = notes
+        
+        if update_data:
+            await db.recordings.update_one({"id": recording_id}, {"$set": update_data})
+        
+        logger.info(f"Updated recording: {recording_id}")
+        return {"message": "Recording updated successfully", "id": recording_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update recording {recording_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/recordings/{recording_id}")
+async def delete_recording(recording_id: str):
+    """Delete a recording"""
+    try:
+        result = await db.recordings.delete_one({"id": recording_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Recording not found")
+        logger.info(f"Deleted recording: {recording_id}")
+        return {"message": "Recording deleted successfully", "id": recording_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete recording {recording_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Include the router in the main app
