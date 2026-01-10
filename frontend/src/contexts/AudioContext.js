@@ -22,6 +22,7 @@ const DEFAULT_EQ = {
 // Default advanced filter settings
 const DEFAULT_ADVANCED = {
     noise_reduction: 0,
+    noise_reduction_mode: 'basic', // 'basic' (spectral gating) or 'ml' (RNNoise)
     voice_isolation: 0,
     gain: 1,
     highpass_enabled: false,
@@ -45,6 +46,8 @@ export const AudioEngineProvider = ({ children }) => {
     const [logs, setLogs] = useState([]);
     const [workletsLoaded, setWorkletsLoaded] = useState(false);
     const [noiseProfileReady, setNoiseProfileReady] = useState(false);
+    const [mlNoiseReductionReady, setMlNoiseReductionReady] = useState(false);
+    const [vadProbability, setVadProbability] = useState(0);
 
     // Refs for Web Audio API
     const audioContextRef = useRef(null);
