@@ -238,36 +238,61 @@ const RecordingControls = () => {
             )}
 
             {/* Recording controls */}
-            <div className="flex gap-3 pt-2">
+            <div className="space-y-2 pt-2">
                 {!isRecording ? (
                     <Button
                         onClick={handleStartRecording}
                         disabled={!isListening}
-                        className="flex-1 btn-primary"
+                        className="w-full btn-primary"
                         data-testid="start-recording-btn"
                     >
                         <Circle className="w-4 h-4 mr-2 fill-current" />
                         Record
                     </Button>
                 ) : (
-                    <Button
-                        onClick={handleStopAndSave}
-                        disabled={isUploading}
-                        className="flex-1 btn-destructive"
-                        data-testid="stop-save-btn"
-                    >
-                        {isUploading ? (
-                            <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Uploading...
-                            </>
-                        ) : (
-                            <>
-                                <Square className="w-4 h-4 mr-2 fill-current" />
-                                Stop & Save
-                            </>
-                        )}
-                    </Button>
+                    <>
+                        {/* Discard & Restart / Discard buttons */}
+                        <div className="flex gap-2">
+                            <Button
+                                onClick={handleDiscardAndRestart}
+                                variant="outline"
+                                className="flex-1 border-accent/50 text-accent hover:bg-accent/10"
+                                data-testid="discard-restart-btn"
+                            >
+                                <RotateCcw className="w-4 h-4 mr-2" />
+                                Restart
+                            </Button>
+                            <Button
+                                onClick={handleDiscard}
+                                variant="outline"
+                                className="flex-1 border-destructive/50 text-destructive hover:bg-destructive/10"
+                                data-testid="discard-btn"
+                            >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Discard
+                            </Button>
+                        </div>
+                        
+                        {/* Stop & Save button */}
+                        <Button
+                            onClick={handleStopAndSave}
+                            disabled={isUploading}
+                            className="w-full btn-primary"
+                            data-testid="stop-save-btn"
+                        >
+                            {isUploading ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Uploading...
+                                </>
+                            ) : (
+                                <>
+                                    <Square className="w-4 h-4 mr-2 fill-current" />
+                                    Stop & Save
+                                </>
+                            )}
+                        </Button>
+                    </>
                 )}
             </div>
 
