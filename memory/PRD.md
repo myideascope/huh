@@ -10,13 +10,18 @@ Build a browser-based app for PC that allows listening to other peoples conversa
 - Visualizations: Both waveform and frequency spectrum
 - Theme: Follows OS configuration (light/dark mode)
 - Platform: Browser-based tool using Web Audio API
+- Authentication: Emergent-managed Google login (optional)
+- Sync: Recordings only (presets remain local)
 
 ## Architecture
 
 ### Frontend (React)
-- **App.js**: Main entry point with theme detection
+- **App.js**: Main entry point with theme detection and auth routing
+- **AuthContext.js**: Emergent Google Auth integration
 - **AudioContext.js**: Web Audio API engine with AudioWorklet support for DSP
-- **Dashboard.js**: Main control room layout
+- **Dashboard.js**: Main control room layout with UserMenu
+- **UserMenu.js**: Sign in/out and sync status
+- **AuthCallback.js**: OAuth callback handler
 - **DeviceSelector.js**: Audio input device selection with level meter
 - **Equalizer.js**: 5-band EQ (60Hz, 230Hz, 910Hz, 3.6kHz, 14kHz)
 - **AdvancedFilters.js**: Gain, noise reduction, voice isolation, highpass/lowpass
@@ -27,8 +32,8 @@ Build a browser-based app for PC that allows listening to other peoples conversa
 - **LogsPanel.js**: Activity logging display
 
 ### Backend (FastAPI)
-- **server.py**: REST API for presets, logs, and recordings
-- MongoDB collections: presets, logs, recordings
+- **server.py**: REST API for auth, presets, logs, and recordings
+- MongoDB collections: users, user_sessions, presets, logs, recordings
 
 ### Audio Worklets (DSP)
 - **noise-reduction-processor.js**: Spectral gating with noise floor estimation
@@ -46,6 +51,8 @@ Build a browser-based app for PC that allows listening to other peoples conversa
 9. ✅ Activity logging
 10. ✅ Headphone warning
 11. ✅ OS theme detection
+12. ✅ User authentication (optional)
+13. ✅ Cross-device recording sync
 
 ## What's Been Implemented
 
@@ -75,7 +82,21 @@ Build a browser-based app for PC that allows listening to other peoples conversa
 - [x] "Save to Cloud" toggle (default: ON)
 - [x] Notes input before recording
 
+### Phase 4 - User Authentication (January 2026)
+- [x] Emergent-managed Google login integration
+- [x] Guest mode (use app without login)
+- [x] User sessions with 7-day expiry
+- [x] Recordings associated with user_id for sync
+- [x] Cross-device recording access
+- [x] Sign in/out UI in header
+- [x] Sync status indicator in recording section
+
 ## API Endpoints
+
+### Authentication
+- `POST /api/auth/session` - Exchange Emergent session_id for app session
+- `GET /api/auth/me` - Get current user info
+- `POST /api/auth/logout` - Logout and clear session
 
 ### Presets
 - `GET /api/presets` - List all presets
@@ -85,7 +106,7 @@ Build a browser-based app for PC that allows listening to other peoples conversa
 - `DELETE /api/presets/{id}` - Delete preset
 
 ### Recordings
-- `GET /api/recordings` - List recordings (without audio data)
+- `GET /api/recordings` - List user's recordings (filtered by auth)
 - `POST /api/recordings` - Save metadata only
 - `POST /api/recordings/upload` - Upload with audio data (base64)
 - `GET /api/recordings/{id}` - Get recording metadata
@@ -105,21 +126,20 @@ Build a browser-based app for PC that allows listening to other peoples conversa
 - Device selection
 - EQ and filters
 - Recording
+- User authentication
 
 ### P1 (Important) - Future
-- Streaming/live sharing of enhanced audio
+- Keyboard shortcuts
 - Audio file import for processing
 - Advanced noise reduction (RNNoise ML model)
-- Multi-track recording
 
 ### P2 (Nice to Have) - Future
-- Keyboard shortcuts
-- User accounts for preset sync
+- Multi-track recording
 - Recording scheduling
 - Audio effects (reverb, compression)
+- Preset sync across devices
 
 ## Next Action Items
 1. Add keyboard shortcuts for common actions (space for listen, R for record)
 2. Implement audio file import to process existing recordings
-3. Add user authentication for cross-device preset/recording sync
-4. Consider integrating ML-based noise reduction (RNNoise WebAssembly)
+3. Consider integrating ML-based noise reduction (RNNoise WebAssembly)
