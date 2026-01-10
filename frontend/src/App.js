@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import '@/App.css';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AudioEngineProvider } from './contexts/AudioContext';
+import { AuthProvider } from './contexts/AuthContext';
 import Dashboard from './components/Dashboard';
+import AuthCallback from './components/AuthCallback';
 
 // Detect system theme preference
 const getSystemTheme = () => {
@@ -22,6 +24,24 @@ const applyTheme = (theme) => {
     }
 };
 
+// Router component that handles auth callback detection
+const AppRouter = () => {
+    const location = useLocation();
+    
+    // Check URL fragment for session_id SYNCHRONOUSLY during render
+    // This prevents race conditions with auth callback
+    if (location.hash?.includes('session_id=')) {
+        return <AuthCallback />;
+    }
+    
+    return (
+        <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+        </Routes>
+    );
+};
+
 function App() {
     useEffect(() => {
         // Apply initial theme
@@ -39,13 +59,13 @@ function App() {
     }, []);
 
     return (
-        <AudioEngineProvider>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                </Routes>
-            </BrowserRouter>
-        </AudioEngineProvider>
+        <AuthProvider>
+            <AudioEngineProvider>
+                <BrowserRouter>
+                    <AppRouter />
+                </BrowserRouter>
+            </AudioEngineProvider>
+        </AuthProvider>
     );
 }
 
