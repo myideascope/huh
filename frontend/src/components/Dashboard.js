@@ -84,6 +84,9 @@ const Dashboard = () => {
                         </div>
 
                         <div className="flex items-center gap-3">
+                            {/* User Menu / Sign In */}
+                            <UserMenu />
+
                             <Button
                                 variant="ghost"
                                 size="sm"
