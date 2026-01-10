@@ -173,13 +173,16 @@ export const AudioEngineProvider = ({ children }) => {
             gainNodeRef.current = audioContextRef.current.createGain();
             gainNodeRef.current.gain.value = advancedSettings.gain;
 
-            // Create EQ filters (5-band)
-            const frequencies = [60, 230, 910, 3600, 14000];
+            // Create EQ filters (15-band graphic equalizer)
+            // ISO standard 1/3 octave center frequencies
+            const frequencies = [25, 40, 63, 100, 160, 250, 400, 630, 1000, 1600, 2500, 4000, 6300, 10000, 16000];
             eqFiltersRef.current = frequencies.map((freq, index) => {
                 const filter = audioContextRef.current.createBiquadFilter();
-                filter.type = index === 0 ? 'lowshelf' : index === 4 ? 'highshelf' : 'peaking';
+                // Use lowshelf for lowest, highshelf for highest, peaking for middle bands
+                filter.type = index === 0 ? 'lowshelf' : index === frequencies.length - 1 ? 'highshelf' : 'peaking';
                 filter.frequency.value = freq;
-                filter.Q.value = 1;
+                // Q factor for 1/3 octave bandwidth is approximately 4.3
+                filter.Q.value = index === 0 || index === frequencies.length - 1 ? 0.7 : 4.3;
                 filter.gain.value = 0;
                 return filter;
             });
