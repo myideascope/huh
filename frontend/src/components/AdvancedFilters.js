@@ -4,7 +4,18 @@ import { Slider } from './ui/slider';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
 import { Button } from './ui/button';
-import { Volume2, Waves, Filter, ArrowUp, ArrowDown, RefreshCw, CheckCircle, Loader2 } from 'lucide-react';
+import { 
+    Volume2, 
+    Waves, 
+    Filter, 
+    ArrowUp, 
+    ArrowDown, 
+    RefreshCw, 
+    CheckCircle, 
+    Loader2,
+    Brain,
+    Zap
+} from 'lucide-react';
 
 const AdvancedFilters = () => {
     const { 
@@ -12,6 +23,8 @@ const AdvancedFilters = () => {
         updateAdvanced, 
         workletsLoaded, 
         noiseProfileReady,
+        mlNoiseReductionReady,
+        vadProbability,
         learnNoiseProfile,
         isListening 
     } = useAudioEngine();
@@ -21,7 +34,8 @@ const AdvancedFilters = () => {
     const isVeryHighGain = advancedSettings.gain > 3.5;
 
     const isNoiseReductionActive = advancedSettings.noise_reduction > 0 && isListening;
-    const isLearningNoise = isNoiseReductionActive && !noiseProfileReady;
+    const isUsingML = advancedSettings.noise_reduction_mode === 'ml';
+    const isLearningNoise = isNoiseReductionActive && !isUsingML && !noiseProfileReady;
 
     return (
         <div className="control-card space-y-6" data-testid="advanced-filters-panel">
@@ -68,14 +82,16 @@ const AdvancedFilters = () => {
                 )}
             </div>
 
-            {/* Noise Reduction - Now Real DSP */}
+            {/* Noise Reduction with Mode Selection */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <Label className="label-text flex items-center gap-2">
                         <Waves className="w-3 h-3" />
                         Noise Reduction
                         {isNoiseReductionActive && (
-                            isLearningNoise ? (
+                            isUsingML ? (
+                                <Brain className="w-3 h-3 text-secondary" />
+                            ) : isLearningNoise ? (
                                 <Loader2 className="w-3 h-3 text-accent animate-spin" />
                             ) : (
                                 <CheckCircle className="w-3 h-3 text-primary" />
@@ -95,15 +111,47 @@ const AdvancedFilters = () => {
                     className="w-full"
                     data-testid="noise-reduction-slider"
                 />
+                
+                {/* Mode Toggle: Basic vs ML */}
+                <div className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg">
+                    <Button
+                        variant={!isUsingML ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => updateAdvanced('noise_reduction_mode', 'basic')}
+                        className={`flex-1 h-8 text-xs ${!isUsingML ? 'bg-primary text-primary-foreground' : ''}`}
+                        data-testid="mode-basic-btn"
+                    >
+                        <Zap className="w-3 h-3 mr-1" />
+                        Basic
+                    </Button>
+                    <Button
+                        variant={isUsingML ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => updateAdvanced('noise_reduction_mode', 'ml')}
+                        disabled={!mlNoiseReductionReady}
+                        className={`flex-1 h-8 text-xs ${isUsingML ? 'bg-secondary text-secondary-foreground' : ''}`}
+                        data-testid="mode-ml-btn"
+                    >
+                        <Brain className="w-3 h-3 mr-1" />
+                        ML (RNNoise)
+                    </Button>
+                </div>
+                
                 <div className="flex items-center justify-between">
                     <p className="text-xs text-muted-foreground">
-                        {workletsLoaded ? (
+                        {isUsingML ? (
+                            mlNoiseReductionReady ? (
+                                isNoiseReductionActive ? (
+                                    <>Neural network active {vadProbability > 0 && <span className="text-primary">(VAD: {(vadProbability * 100).toFixed(0)}%)</span>}</>
+                                ) : 'Deep learning noise suppression'
+                            ) : 'Loading RNNoise model...'
+                        ) : (
                             isNoiseReductionActive ? (
                                 isLearningNoise ? 'Learning ambient noise...' : 'Spectral gating active'
-                            ) : 'Enable to reduce background noise'
-                        ) : 'Basic noise gate (worklets loading...)'}
+                            ) : 'Spectral gating noise reduction'
+                        )}
                     </p>
-                    {isNoiseReductionActive && noiseProfileReady && (
+                    {!isUsingML && isNoiseReductionActive && noiseProfileReady && (
                         <Button
                             variant="ghost"
                             size="sm"
@@ -118,7 +166,7 @@ const AdvancedFilters = () => {
                 </div>
             </div>
 
-            {/* Voice Isolation - Now Real DSP */}
+            {/* Voice Isolation */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <Label className="label-text flex items-center gap-2">
@@ -142,11 +190,9 @@ const AdvancedFilters = () => {
                     data-testid="voice-isolation-slider"
                 />
                 <p className="text-xs text-muted-foreground">
-                    {workletsLoaded ? (
-                        advancedSettings.voice_isolation > 0 && isListening 
-                            ? 'Bandpass + formant enhancement active' 
-                            : 'Enhances speech frequencies (85Hz-3.4kHz)'
-                    ) : 'Basic voice boost (worklets loading...)'}
+                    {advancedSettings.voice_isolation > 0 && isListening 
+                        ? 'Bandpass + formant enhancement active' 
+                        : 'Enhances speech frequencies (85Hz-3.4kHz)'}
                 </p>
             </div>
 
@@ -181,9 +227,6 @@ const AdvancedFilters = () => {
                             className="w-full"
                             data-testid="highpass-freq-slider"
                         />
-                        <p className="text-xs text-muted-foreground">
-                            Removes low rumble and bass frequencies
-                        </p>
                     </div>
                 )}
             </div>
@@ -219,9 +262,6 @@ const AdvancedFilters = () => {
                             className="w-full"
                             data-testid="lowpass-freq-slider"
                         />
-                        <p className="text-xs text-muted-foreground">
-                            Removes high-frequency hiss and noise
-                        </p>
                     </div>
                 )}
             </div>
