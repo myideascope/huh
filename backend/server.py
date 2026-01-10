@@ -478,8 +478,13 @@ async def clear_logs():
 # =============== RECORDINGS ===============
 
 @api_router.post("/recordings", response_model=RecordingMetadata)
-async def save_recording_metadata(recording_data: RecordingMetadataCreate):
+async def save_recording_metadata(request: Request, recording_data: RecordingMetadataCreate):
+    """Save recording metadata (for local recordings)"""
     try:
+        # Get current user if logged in
+        user = await get_current_user(request)
+        user_id = user.user_id if user else None
+        
         recording = RecordingMetadata(
             filename=recording_data.filename,
             format=recording_data.format,
@@ -487,7 +492,8 @@ async def save_recording_metadata(recording_data: RecordingMetadataCreate):
             file_size_bytes=recording_data.file_size_bytes,
             preset_used=recording_data.preset_used,
             notes=recording_data.notes,
-            has_audio_data=False
+            has_audio_data=False,
+            user_id=user_id
         )
         
         doc = recording.model_dump()
@@ -502,6 +508,7 @@ async def save_recording_metadata(recording_data: RecordingMetadataCreate):
 
 @api_router.post("/recordings/upload")
 async def upload_recording(
+    request: Request,
     audio_data: str = Form(...),  # Base64 encoded audio
     filename: str = Form(...),
     format: str = Form(...),
@@ -512,6 +519,10 @@ async def upload_recording(
 ):
     """Upload a recording with audio data to cloud storage"""
     try:
+        # Get current user if logged in
+        user = await get_current_user(request)
+        user_id = user.user_id if user else None
+        
         # Validate base64 data
         try:
             # Just verify it's valid base64
@@ -533,6 +544,7 @@ async def upload_recording(
             "notes": notes,
             "audio_data": audio_data,
             "has_audio_data": True,
+            "user_id": user_id,
             "created_at": created_at.isoformat()
         }
         
