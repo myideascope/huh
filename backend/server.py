@@ -170,6 +170,7 @@ class RecordingMetadata(BaseModel):
     preset_used: Optional[str] = None
     has_audio_data: bool = Field(default=False)
     notes: Optional[str] = None
+    user_id: Optional[str] = None  # For cross-device sync
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class RecordingMetadataCreate(BaseModel):
@@ -191,7 +192,137 @@ class RecordingWithAudio(BaseModel):
     preset_used: Optional[str] = None
     notes: Optional[str] = None
     audio_data: str  # Base64 encoded audio
+    user_id: Optional[str] = None  # For cross-device sync
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# =============== AUTH ROUTES ===============
+
+@api_router.post("/auth/session")
+async def create_session(request: Request):
+    """Exchange session_id from Emergent Auth for a session token"""
+    try:
+        body = await request.json()
+        session_id = body.get("session_id")
+        
+        if not session_id:
+            raise HTTPException(status_code=400, detail="session_id required")
+        
+        # Call Emergent Auth to get user data
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+                headers={"X-Session-ID": session_id}
+            )
+            
+            if response.status_code != 200:
+                logger.error(f"Emergent Auth error: {response.status_code} - {response.text}")
+                raise HTTPException(status_code=401, detail="Invalid session")
+            
+            auth_data = response.json()
+        
+        email = auth_data.get("email")
+        name = auth_data.get("name")
+        picture = auth_data.get("picture")
+        session_token = auth_data.get("session_token")
+        
+        if not email or not session_token:
+            raise HTTPException(status_code=401, detail="Invalid auth response")
+        
+        # Check if user exists
+        existing_user = await db.users.find_one({"email": email}, {"_id": 0})
+        
+        if existing_user:
+            user_id = existing_user["user_id"]
+            # Update user info if changed
+            await db.users.update_one(
+                {"user_id": user_id},
+                {"$set": {"name": name, "picture": picture}}
+            )
+        else:
+            # Create new user
+            user_id = f"user_{uuid.uuid4().hex[:12]}"
+            user_doc = {
+                "user_id": user_id,
+                "email": email,
+                "name": name,
+                "picture": picture,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.users.insert_one(user_doc)
+            logger.info(f"Created new user: {email} ({user_id})")
+        
+        # Create session
+        expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+        session_doc = {
+            "user_id": user_id,
+            "session_token": session_token,
+            "expires_at": expires_at.isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Remove old sessions for this user
+        await db.user_sessions.delete_many({"user_id": user_id})
+        await db.user_sessions.insert_one(session_doc)
+        
+        # Create response with cookie
+        response = JSONResponse(content={
+            "user_id": user_id,
+            "email": email,
+            "name": name,
+            "picture": picture
+        })
+        
+        response.set_cookie(
+            key="session_token",
+            value=session_token,
+            httponly=True,
+            secure=True,
+            samesite="none",
+            path="/",
+            max_age=7 * 24 * 60 * 60  # 7 days
+        )
+        
+        logger.info(f"User logged in: {email}")
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Session creation error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/auth/me")
+async def get_current_user_info(request: Request):
+    """Get current authenticated user info"""
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    return {
+        "user_id": user.user_id,
+        "email": user.email,
+        "name": user.name,
+        "picture": user.picture
+    }
+
+@api_router.post("/auth/logout")
+async def logout(request: Request):
+    """Logout and clear session"""
+    session_token = request.cookies.get("session_token")
+    
+    if session_token:
+        await db.user_sessions.delete_many({"session_token": session_token})
+    
+    response = JSONResponse(content={"message": "Logged out successfully"})
+    response.delete_cookie(
+        key="session_token",
+        path="/",
+        secure=True,
+        samesite="none"
+    )
+    
+    logger.info("User logged out")
+    return response
 
 # =============== ROUTES ===============
 
