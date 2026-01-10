@@ -278,6 +278,9 @@ export const AudioEngineProvider = ({ children }) => {
             if (noiseReductionNodeRef.current) {
                 try { noiseReductionNodeRef.current.disconnect(); } catch (e) { /* Ignore */ }
             }
+            if (rnnoiseNodeRef.current) {
+                try { rnnoiseNodeRef.current.disconnect(); } catch (e) { /* Ignore */ }
+            }
             if (voiceIsolationNodeRef.current) {
                 try { voiceIsolationNodeRef.current.disconnect(); } catch (e) { /* Ignore */ }
             }
@@ -299,10 +302,17 @@ export const AudioEngineProvider = ({ children }) => {
                 currentNode = highpassFilterRef.current;
             }
 
-            // Noise reduction worklet (if available and enabled)
-            if (noiseReductionNodeRef.current && advancedSettings.noise_reduction > 0) {
-                currentNode.connect(noiseReductionNodeRef.current);
-                currentNode = noiseReductionNodeRef.current;
+            // Noise reduction (choose ML or basic based on mode)
+            if (advancedSettings.noise_reduction > 0) {
+                if (advancedSettings.noise_reduction_mode === 'ml' && rnnoiseNodeRef.current && mlNoiseReductionReady) {
+                    // ML-based noise reduction (RNNoise)
+                    currentNode.connect(rnnoiseNodeRef.current);
+                    currentNode = rnnoiseNodeRef.current;
+                } else if (noiseReductionNodeRef.current) {
+                    // Basic spectral gating noise reduction
+                    currentNode.connect(noiseReductionNodeRef.current);
+                    currentNode = noiseReductionNodeRef.current;
+                }
             }
 
             // Voice isolation worklet (if available and enabled)
