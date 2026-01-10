@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAudioEngine } from '../contexts/AudioContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Switch } from './ui/switch';
@@ -7,6 +8,7 @@ import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Circle, Square, Download, CloudUpload, Loader2 } from 'lucide-react';
 import RecordingHistory from './RecordingHistory';
+import { SyncStatus } from './UserMenu';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
