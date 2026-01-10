@@ -192,6 +192,50 @@ class AudioForgeAPITester:
         # Test GET recordings with limit
         self.run_test("Get Recordings with Limit", "GET", "recordings?limit=5", 200)
 
+    def test_auth_endpoints(self):
+        """Test authentication endpoints"""
+        print("\n🔍 Testing Authentication Endpoints...")
+        
+        # Test GET /api/auth/me without authentication (should return 401)
+        self.run_test("Auth Me - Unauthenticated", "GET", "auth/me", 401)
+        
+        # Test POST /api/auth/logout without session (should still work)
+        self.run_test("Logout - No Session", "POST", "auth/logout", 200)
+        
+        # Test POST /api/auth/session with invalid session_id
+        invalid_session_data = {"session_id": "invalid-session-id"}
+        self.run_test("Auth Session - Invalid ID", "POST", "auth/session", 401, invalid_session_data)
+        
+        # Test POST /api/auth/session without session_id
+        empty_session_data = {}
+        self.run_test("Auth Session - Missing ID", "POST", "auth/session", 400, empty_session_data)
+
+    def test_recordings_guest_mode(self):
+        """Test recordings work for guest users (no authentication)"""
+        print("\n🔍 Testing Recordings in Guest Mode...")
+        
+        # Test CREATE recording metadata as guest
+        test_recording = {
+            "filename": "guest-recording-001.wav",
+            "format": "wav", 
+            "duration_seconds": 30.0,
+            "file_size_bytes": 512000,
+            "preset_used": "Guest Preset",
+            "notes": "Test recording from guest user"
+        }
+        
+        success, created_recording, _ = self.run_test("Create Guest Recording", "POST", "recordings", 200, test_recording)
+        
+        # Test GET recordings as guest (should return guest recordings)
+        self.run_test("Get Guest Recordings", "GET", "recordings", 200)
+        
+        # Verify the recording was created without user_id (guest mode)
+        if success and 'user_id' in created_recording:
+            if created_recording['user_id'] is None:
+                print("✅ Recording correctly created without user_id (guest mode)")
+            else:
+                print(f"⚠️ Recording has user_id: {created_recording['user_id']} (unexpected for guest)")
+
     def test_error_cases(self):
         """Test error handling"""
         print("\n🔍 Testing Error Cases...")
