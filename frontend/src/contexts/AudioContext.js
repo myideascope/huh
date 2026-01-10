@@ -112,13 +112,22 @@ export const AudioEngineProvider = ({ children }) => {
         try {
             addLog('info', 'Loading audio worklet processors...');
             
-            // Load noise reduction worklet
+            // Load basic noise reduction worklet
             await audioContext.audioWorklet.addModule('/worklets/noise-reduction-processor.js');
-            addLog('success', 'Noise reduction processor loaded');
+            addLog('success', 'Basic noise reduction processor loaded');
             
             // Load voice isolation worklet
             await audioContext.audioWorklet.addModule('/worklets/voice-isolation-processor.js');
             addLog('success', 'Voice isolation processor loaded');
+            
+            // Load RNNoise ML worklet
+            try {
+                await audioContext.audioWorklet.addModule('/worklets/rnnoise-processor.js');
+                addLog('success', 'RNNoise ML processor loaded');
+                setMlNoiseReductionReady(true);
+            } catch (rnnoiseErr) {
+                addLog('warning', 'RNNoise ML processor not available', { error: rnnoiseErr.message });
+            }
             
             setWorkletsLoaded(true);
             return true;
