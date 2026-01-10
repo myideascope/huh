@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-01-09T22:54:00.531897",
-  "total_tests": 19,
-  "passed_tests": 19,
+  "timestamp": "2026-01-10T19:07:14.275150",
+  "total_tests": 25,
+  "passed_tests": 25,
   "success_rate": 100.0,
   "test_results": [
     {
@@ -33,6 +33,58 @@
       }
     },
     {
+      "test_name": "Auth Me - Unauthenticated",
+      "success": true,
+      "details": {
+        "method": "GET",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/auth/me",
+        "expected_status": 401,
+        "actual_status": 401,
+        "response": {
+          "detail": "Not authenticated"
+        }
+      }
+    },
+    {
+      "test_name": "Logout - No Session",
+      "success": true,
+      "details": {
+        "method": "POST",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/auth/logout",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": {
+          "message": "Logged out successfully"
+        }
+      }
+    },
+    {
+      "test_name": "Auth Session - Invalid ID",
+      "success": true,
+      "details": {
+        "method": "POST",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/auth/session",
+        "expected_status": 401,
+        "actual_status": 401,
+        "response": {
+          "detail": "Invalid session"
+        }
+      }
+    },
+    {
+      "test_name": "Auth Session - Missing ID",
+      "success": true,
+      "details": {
+        "method": "POST",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/auth/session",
+        "expected_status": 400,
+        "actual_status": 400,
+        "response": {
+          "detail": "session_id required"
+        }
+      }
+    },
+    {
       "test_name": "Get Empty Presets",
       "success": true,
       "details": {
@@ -52,7 +104,7 @@
         "expected_status": 200,
         "actual_status": 200,
         "response": {
-          "id": "e7ae8d30-114c-455b-ba0e-a59022bd112c",
+          "id": "d6d081a1-2537-4ef0-81a8-0600709cba94",
           "name": "Test Preset",
           "description": "Test preset for API testing",
           "equalizer": {
@@ -71,8 +123,8 @@
             "lowpass_enabled": false,
             "lowpass_frequency": 15000.0
           },
-          "created_at": "2026-01-09T22:53:59.924236Z",
-          "updated_at": "2026-01-09T22:53:59.924239Z"
+          "created_at": "2026-01-10T19:07:13.542613Z",
+          "updated_at": "2026-01-10T19:07:13.542617Z"
         }
       }
     },
@@ -81,11 +133,11 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/e7ae8d30-114c-455b-ba0e-a59022bd112c",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/d6d081a1-2537-4ef0-81a8-0600709cba94",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
-          "id": "e7ae8d30-114c-455b-ba0e-a59022bd112c",
+          "id": "d6d081a1-2537-4ef0-81a8-0600709cba94",
           "name": "Test Preset",
           "description": "Test preset for API testing",
           "equalizer": {
@@ -104,8 +156,8 @@
             "lowpass_enabled": false,
             "lowpass_frequency": 15000.0
           },
-          "created_at": "2026-01-09T22:53:59.924236Z",
-          "updated_at": "2026-01-09T22:53:59.924239Z"
+          "created_at": "2026-01-10T19:07:13.542613Z",
+          "updated_at": "2026-01-10T19:07:13.542617Z"
         }
       }
     },
@@ -114,11 +166,11 @@
       "success": true,
       "details": {
         "method": "PUT",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/e7ae8d30-114c-455b-ba0e-a59022bd112c",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/d6d081a1-2537-4ef0-81a8-0600709cba94",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
-          "id": "e7ae8d30-114c-455b-ba0e-a59022bd112c",
+          "id": "d6d081a1-2537-4ef0-81a8-0600709cba94",
           "name": "Updated Test Preset",
           "description": "Test preset for API testing",
           "equalizer": {
@@ -137,8 +189,8 @@
             "lowpass_enabled": false,
             "lowpass_frequency": 15000.0
           },
-          "created_at": "2026-01-09T22:53:59.924236Z",
-          "updated_at": "2026-01-09T22:54:00.006789Z"
+          "created_at": "2026-01-10T19:07:13.542613Z",
+          "updated_at": "2026-01-10T19:07:13.628643Z"
         }
       }
     },
@@ -152,7 +204,7 @@
         "actual_status": 200,
         "response": [
           {
-            "id": "e7ae8d30-114c-455b-ba0e-a59022bd112c",
+            "id": "d6d081a1-2537-4ef0-81a8-0600709cba94",
             "name": "Updated Test Preset",
             "description": "Test preset for API testing",
             "equalizer": {
@@ -171,8 +223,8 @@
               "lowpass_enabled": false,
               "lowpass_frequency": 15000.0
             },
-            "created_at": "2026-01-09T22:53:59.924236Z",
-            "updated_at": "2026-01-09T22:54:00.006789Z"
+            "created_at": "2026-01-10T19:07:13.542613Z",
+            "updated_at": "2026-01-10T19:07:13.628643Z"
           }
         ]
       }
@@ -182,12 +234,12 @@
       "success": true,
       "details": {
         "method": "DELETE",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/e7ae8d30-114c-455b-ba0e-a59022bd112c",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/d6d081a1-2537-4ef0-81a8-0600709cba94",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
           "message": "Preset deleted successfully",
-          "id": "e7ae8d30-114c-455b-ba0e-a59022bd112c"
+          "id": "d6d081a1-2537-4ef0-81a8-0600709cba94"
         }
       }
     },
@@ -196,7 +248,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/e7ae8d30-114c-455b-ba0e-a59022bd112c",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/d6d081a1-2537-4ef0-81a8-0600709cba94",
         "expected_status": 404,
         "actual_status": 404,
         "response": {
@@ -213,13 +265,13 @@
         "expected_status": 200,
         "actual_status": 200,
         "response": {
-          "id": "49e98b41-50e5-4879-a155-17d0a85c79cb",
-          "timestamp": "2026-01-09T22:54:00.157241Z",
+          "id": "72364048-44f5-4b94-bb8f-a7b4c35e4871",
+          "timestamp": "2026-01-10T19:07:13.812713Z",
           "level": "info",
           "message": "Test log entry from API test",
           "details": {
             "test_run": true,
-            "timestamp": "2026-01-09T22:54:00.126591"
+            "timestamp": "2026-01-10T19:07:13.781199"
           }
         }
       }
@@ -234,13 +286,13 @@
         "actual_status": 200,
         "response": [
           {
-            "id": "49e98b41-50e5-4879-a155-17d0a85c79cb",
-            "timestamp": "2026-01-09T22:54:00.157241Z",
+            "id": "72364048-44f5-4b94-bb8f-a7b4c35e4871",
+            "timestamp": "2026-01-10T19:07:13.812713Z",
             "level": "info",
             "message": "Test log entry from API test",
             "details": {
               "test_run": true,
-              "timestamp": "2026-01-09T22:54:00.126591"
+              "timestamp": "2026-01-10T19:07:13.781199"
             }
           }
         ]
@@ -256,13 +308,13 @@
         "actual_status": 200,
         "response": [
           {
-            "id": "49e98b41-50e5-4879-a155-17d0a85c79cb",
-            "timestamp": "2026-01-09T22:54:00.157241Z",
+            "id": "72364048-44f5-4b94-bb8f-a7b4c35e4871",
+            "timestamp": "2026-01-10T19:07:13.812713Z",
             "level": "info",
             "message": "Test log entry from API test",
             "details": {
               "test_run": true,
-              "timestamp": "2026-01-09T22:54:00.126591"
+              "timestamp": "2026-01-10T19:07:13.781199"
             }
           }
         ]
@@ -290,13 +342,16 @@
         "expected_status": 200,
         "actual_status": 200,
         "response": {
-          "id": "b0402655-6e5d-46d6-8776-770c953759c0",
+          "id": "2b935287-4955-438e-abac-7f55304e4449",
           "filename": "test-recording-001.wav",
           "format": "wav",
           "duration_seconds": 45.5,
           "file_size_bytes": 1024000,
           "preset_used": "Test Preset",
-          "created_at": "2026-01-09T22:54:00.307415Z"
+          "has_audio_data": false,
+          "notes": null,
+          "user_id": null,
+          "created_at": "2026-01-10T19:07:13.958249Z"
         }
       }
     },
@@ -310,12 +365,27 @@
         "actual_status": 200,
         "response": [
           {
+            "id": "2b935287-4955-438e-abac-7f55304e4449",
+            "filename": "test-recording-001.wav",
+            "format": "wav",
+            "duration_seconds": 45.5,
+            "file_size_bytes": 1024000,
+            "preset_used": "Test Preset",
+            "has_audio_data": false,
+            "notes": null,
+            "user_id": null,
+            "created_at": "2026-01-10T19:07:13.958249Z"
+          },
+          {
             "id": "b0402655-6e5d-46d6-8776-770c953759c0",
             "filename": "test-recording-001.wav",
             "format": "wav",
             "duration_seconds": 45.5,
             "file_size_bytes": 1024000,
             "preset_used": "Test Preset",
+            "has_audio_data": false,
+            "notes": null,
+            "user_id": null,
             "created_at": "2026-01-09T22:54:00.307415Z"
           }
         ]
@@ -331,12 +401,97 @@
         "actual_status": 200,
         "response": [
           {
+            "id": "2b935287-4955-438e-abac-7f55304e4449",
+            "filename": "test-recording-001.wav",
+            "format": "wav",
+            "duration_seconds": 45.5,
+            "file_size_bytes": 1024000,
+            "preset_used": "Test Preset",
+            "has_audio_data": false,
+            "notes": null,
+            "user_id": null,
+            "created_at": "2026-01-10T19:07:13.958249Z"
+          },
+          {
             "id": "b0402655-6e5d-46d6-8776-770c953759c0",
             "filename": "test-recording-001.wav",
             "format": "wav",
             "duration_seconds": 45.5,
             "file_size_bytes": 1024000,
             "preset_used": "Test Preset",
+            "has_audio_data": false,
+            "notes": null,
+            "user_id": null,
+            "created_at": "2026-01-09T22:54:00.307415Z"
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "Create Guest Recording",
+      "success": true,
+      "details": {
+        "method": "POST",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/recordings",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": {
+          "id": "f5bd456f-655e-4315-8115-9cc80204ee44",
+          "filename": "guest-recording-001.wav",
+          "format": "wav",
+          "duration_seconds": 30.0,
+          "file_size_bytes": 512000,
+          "preset_used": "Guest Preset",
+          "has_audio_data": false,
+          "notes": "Test recording from guest user",
+          "user_id": null,
+          "created_at": "2026-01-10T19:07:14.078538Z"
+        }
+      }
+    },
+    {
+      "test_name": "Get Guest Recordings",
+      "success": true,
+      "details": {
+        "method": "GET",
+        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/recordings",
+        "expected_status": 200,
+        "actual_status": 200,
+        "response": [
+          {
+            "id": "f5bd456f-655e-4315-8115-9cc80204ee44",
+            "filename": "guest-recording-001.wav",
+            "format": "wav",
+            "duration_seconds": 30.0,
+            "file_size_bytes": 512000,
+            "preset_used": "Guest Preset",
+            "has_audio_data": false,
+            "notes": "Test recording from guest user",
+            "user_id": null,
+            "created_at": "2026-01-10T19:07:14.078538Z"
+          },
+          {
+            "id": "2b935287-4955-438e-abac-7f55304e4449",
+            "filename": "test-recording-001.wav",
+            "format": "wav",
+            "duration_seconds": 45.5,
+            "file_size_bytes": 1024000,
+            "preset_used": "Test Preset",
+            "has_audio_data": false,
+            "notes": null,
+            "user_id": null,
+            "created_at": "2026-01-10T19:07:13.958249Z"
+          },
+          {
+            "id": "b0402655-6e5d-46d6-8776-770c953759c0",
+            "filename": "test-recording-001.wav",
+            "format": "wav",
+            "duration_seconds": 45.5,
+            "file_size_bytes": 1024000,
+            "preset_used": "Test Preset",
+            "has_audio_data": false,
+            "notes": null,
+            "user_id": null,
             "created_at": "2026-01-09T22:54:00.307415Z"
           }
         ]
