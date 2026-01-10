@@ -691,6 +691,8 @@ export const AudioEngineProvider = ({ children }) => {
         logs,
         workletsLoaded,
         noiseProfileReady,
+        mlNoiseReductionReady,
+        vadProbability,
 
         // Actions
         initializeAudio,
