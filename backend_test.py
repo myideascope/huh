@@ -264,9 +264,11 @@ class AudioForgeAPITester:
         
         try:
             self.test_health_endpoints()
+            self.test_auth_endpoints()
             self.test_presets_crud()
             self.test_logs_operations()
             self.test_recordings_operations()
+            self.test_recordings_guest_mode()
             self.test_error_cases()
             
         except KeyboardInterrupt:
