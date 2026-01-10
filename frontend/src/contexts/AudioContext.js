@@ -188,12 +188,13 @@ export const AudioEngineProvider = ({ children }) => {
             // Create noise reduction worklet node if available
             if (workletsLoaded || audioContextRef.current.audioWorklet) {
                 try {
+                    // Basic noise reduction (spectral gating)
                     noiseReductionNodeRef.current = new AudioWorkletNode(
                         audioContextRef.current,
                         'noise-reduction-processor'
                     );
                     
-                    // Listen for messages from the worklet
+                    // Listen for messages from the basic worklet
                     noiseReductionNodeRef.current.port.onmessage = (event) => {
                         if (event.data.type === 'noiseProfileReady') {
                             setNoiseProfileReady(true);
@@ -202,6 +203,32 @@ export const AudioEngineProvider = ({ children }) => {
                             addLog('info', 'Learning ambient noise profile...');
                         }
                     };
+                    
+                    // ML-based noise reduction (RNNoise)
+                    try {
+                        rnnoiseNodeRef.current = new AudioWorkletNode(
+                            audioContextRef.current,
+                            'rnnoise-processor'
+                        );
+                        
+                        // Listen for messages from RNNoise worklet
+                        rnnoiseNodeRef.current.port.onmessage = (event) => {
+                            if (event.data.type === 'initialized') {
+                                if (event.data.success) {
+                                    setMlNoiseReductionReady(true);
+                                    addLog('success', 'RNNoise ML engine initialized');
+                                } else {
+                                    addLog('warning', 'RNNoise initialization failed', { error: event.data.error });
+                                }
+                            } else if (event.data.type === 'vad') {
+                                setVadProbability(event.data.probability);
+                            }
+                        };
+                        
+                        addLog('info', 'RNNoise ML worklet node created');
+                    } catch (rnnoiseErr) {
+                        addLog('warning', 'RNNoise not available', { error: rnnoiseErr.message });
+                    }
                     
                     // Create voice isolation worklet node
                     voiceIsolationNodeRef.current = new AudioWorkletNode(
