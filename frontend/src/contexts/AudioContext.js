@@ -58,6 +58,7 @@ export const AudioEngineProvider = ({ children }) => {
     const highpassFilterRef = useRef(null);
     const lowpassFilterRef = useRef(null);
     const noiseReductionNodeRef = useRef(null);
+    const rnnoiseNodeRef = useRef(null);  // ML-based noise reduction
     const voiceIsolationNodeRef = useRef(null);
     const mediaStreamRef = useRef(null);
     const mediaRecorderRef = useRef(null);
