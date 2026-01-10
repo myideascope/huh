@@ -36,7 +36,8 @@ Build a browser-based app for PC that allows listening to other peoples conversa
 - MongoDB collections: users, user_sessions, presets, logs, recordings
 
 ### Audio Worklets (DSP)
-- **noise-reduction-processor.js**: Spectral gating with noise floor estimation
+- **noise-reduction-processor.js**: Basic spectral gating with noise floor estimation
+- **rnnoise-processor.js**: ML-based noise reduction using RNNoise neural network
 - **voice-isolation-processor.js**: Bandpass filtering with formant enhancement
 
 ## Core Requirements (Static)
