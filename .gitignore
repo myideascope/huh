@@ -82,3 +82,7 @@ android-sdk/
 # Environment files - KEEP COMMITTED for deployment
 # *.env
 # *.env.*
+-e 
+# Environment files
+*.env
+*.env.*
