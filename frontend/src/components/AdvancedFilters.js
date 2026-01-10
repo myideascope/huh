@@ -3,20 +3,36 @@ import { useAudioEngine } from '../contexts/AudioContext';
 import { Slider } from './ui/slider';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
-import { Volume2, Waves, Filter, ArrowUp, ArrowDown } from 'lucide-react';
+import { Button } from './ui/button';
+import { Volume2, Waves, Filter, ArrowUp, ArrowDown, RefreshCw, CheckCircle, Loader2 } from 'lucide-react';
 
 const AdvancedFilters = () => {
-    const { advancedSettings, updateAdvanced } = useAudioEngine();
+    const { 
+        advancedSettings, 
+        updateAdvanced, 
+        workletsLoaded, 
+        noiseProfileReady,
+        learnNoiseProfile,
+        isListening 
+    } = useAudioEngine();
 
     const gainPercentage = Math.round((advancedSettings.gain - 0.1) / (5 - 0.1) * 100);
     const isHighGain = advancedSettings.gain > 2;
     const isVeryHighGain = advancedSettings.gain > 3.5;
+
+    const isNoiseReductionActive = advancedSettings.noise_reduction > 0 && isListening;
+    const isLearningNoise = isNoiseReductionActive && !noiseProfileReady;
 
     return (
         <div className="control-card space-y-6" data-testid="advanced-filters-panel">
             <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                 <Filter className="w-4 h-4" />
                 Advanced Filters
+                {workletsLoaded && (
+                    <span className="text-xs font-normal text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                        DSP Active
+                    </span>
+                )}
             </h3>
 
             {/* Gain Control */}
@@ -52,12 +68,19 @@ const AdvancedFilters = () => {
                 )}
             </div>
 
-            {/* Noise Reduction - Visual placeholder */}
+            {/* Noise Reduction - Now Real DSP */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <Label className="label-text flex items-center gap-2">
                         <Waves className="w-3 h-3" />
                         Noise Reduction
+                        {isNoiseReductionActive && (
+                            isLearningNoise ? (
+                                <Loader2 className="w-3 h-3 text-accent animate-spin" />
+                            ) : (
+                                <CheckCircle className="w-3 h-3 text-primary" />
+                            )
+                        )}
                     </Label>
                     <span className="text-sm font-mono text-foreground" data-testid="noise-reduction-value">
                         {advancedSettings.noise_reduction}%
@@ -72,17 +95,38 @@ const AdvancedFilters = () => {
                     className="w-full"
                     data-testid="noise-reduction-slider"
                 />
-                <p className="text-xs text-muted-foreground">
-                    Reduces background noise (simulated)
-                </p>
+                <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                        {workletsLoaded ? (
+                            isNoiseReductionActive ? (
+                                isLearningNoise ? 'Learning ambient noise...' : 'Spectral gating active'
+                            ) : 'Enable to reduce background noise'
+                        ) : 'Basic noise gate (worklets loading...)'}
+                    </p>
+                    {isNoiseReductionActive && noiseProfileReady && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={learnNoiseProfile}
+                            className="h-6 px-2 text-xs"
+                            data-testid="relearn-noise-btn"
+                        >
+                            <RefreshCw className="w-3 h-3 mr-1" />
+                            Re-learn
+                        </Button>
+                    )}
+                </div>
             </div>
 
-            {/* Voice Isolation - Visual placeholder */}
+            {/* Voice Isolation - Now Real DSP */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <Label className="label-text flex items-center gap-2">
                         <Waves className="w-3 h-3" />
                         Voice Isolation
+                        {advancedSettings.voice_isolation > 0 && isListening && (
+                            <CheckCircle className="w-3 h-3 text-primary" />
+                        )}
                     </Label>
                     <span className="text-sm font-mono text-foreground" data-testid="voice-isolation-value">
                         {advancedSettings.voice_isolation}%
@@ -98,7 +142,11 @@ const AdvancedFilters = () => {
                     data-testid="voice-isolation-slider"
                 />
                 <p className="text-xs text-muted-foreground">
-                    Enhances voice frequencies (simulated)
+                    {workletsLoaded ? (
+                        advancedSettings.voice_isolation > 0 && isListening 
+                            ? 'Bandpass + formant enhancement active' 
+                            : 'Enhances speech frequencies (85Hz-3.4kHz)'
+                    ) : 'Basic voice boost (worklets loading...)'}
                 </p>
             </div>
 
