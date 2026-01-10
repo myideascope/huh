@@ -43,6 +43,8 @@ export const AudioEngineProvider = ({ children }) => {
     const [recordingDuration, setRecordingDuration] = useState(0);
     const [error, setError] = useState(null);
     const [logs, setLogs] = useState([]);
+    const [workletsLoaded, setWorkletsLoaded] = useState(false);
+    const [noiseProfileReady, setNoiseProfileReady] = useState(false);
 
     // Refs for Web Audio API
     const audioContextRef = useRef(null);
@@ -52,6 +54,8 @@ export const AudioEngineProvider = ({ children }) => {
     const eqFiltersRef = useRef([]);
     const highpassFilterRef = useRef(null);
     const lowpassFilterRef = useRef(null);
+    const noiseReductionNodeRef = useRef(null);
+    const voiceIsolationNodeRef = useRef(null);
     const mediaStreamRef = useRef(null);
     const mediaRecorderRef = useRef(null);
     const recordedChunksRef = useRef([]);
@@ -99,6 +103,28 @@ export const AudioEngineProvider = ({ children }) => {
         }
     }, [selectedDevice, addLog]);
 
+    // Load Audio Worklets
+    const loadWorklets = useCallback(async (audioContext) => {
+        try {
+            addLog('info', 'Loading audio worklet processors...');
+            
+            // Load noise reduction worklet
+            await audioContext.audioWorklet.addModule('/worklets/noise-reduction-processor.js');
+            addLog('success', 'Noise reduction processor loaded');
+            
+            // Load voice isolation worklet
+            await audioContext.audioWorklet.addModule('/worklets/voice-isolation-processor.js');
+            addLog('success', 'Voice isolation processor loaded');
+            
+            setWorkletsLoaded(true);
+            return true;
+        } catch (err) {
+            addLog('error', 'Failed to load audio worklets', { error: err.message });
+            // Continue without worklets - will use fallback
+            return false;
+        }
+    }, [addLog]);
+
     // Initialize audio context
     const initializeAudio = useCallback(async () => {
         try {
@@ -110,6 +136,9 @@ export const AudioEngineProvider = ({ children }) => {
             // Create audio context
             const AudioContextClass = window.AudioContext || window.webkitAudioContext;
             audioContextRef.current = new AudioContextClass();
+            
+            // Load worklets
+            await loadWorklets(audioContextRef.current);
             
             // Create analyser node for visualization
             analyserNodeRef.current = audioContextRef.current.createAnalyser();
@@ -143,6 +172,36 @@ export const AudioEngineProvider = ({ children }) => {
             lowpassFilterRef.current.frequency.value = advancedSettings.lowpass_frequency;
             lowpassFilterRef.current.Q.value = 0.7;
 
+            // Create noise reduction worklet node if available
+            if (workletsLoaded || audioContextRef.current.audioWorklet) {
+                try {
+                    noiseReductionNodeRef.current = new AudioWorkletNode(
+                        audioContextRef.current,
+                        'noise-reduction-processor'
+                    );
+                    
+                    // Listen for messages from the worklet
+                    noiseReductionNodeRef.current.port.onmessage = (event) => {
+                        if (event.data.type === 'noiseProfileReady') {
+                            setNoiseProfileReady(true);
+                            addLog('success', 'Noise profile learned', { threshold: event.data.threshold.toFixed(4) });
+                        } else if (event.data.type === 'learningNoise') {
+                            addLog('info', 'Learning ambient noise profile...');
+                        }
+                    };
+                    
+                    // Create voice isolation worklet node
+                    voiceIsolationNodeRef.current = new AudioWorkletNode(
+                        audioContextRef.current,
+                        'voice-isolation-processor'
+                    );
+                    
+                    addLog('success', 'Audio worklet nodes created');
+                } catch (err) {
+                    addLog('warning', 'Worklet nodes unavailable, using basic processing', { error: err.message });
+                }
+            }
+
             await refreshDevices();
             setIsInitialized(true);
             setError(null);
@@ -154,7 +213,86 @@ export const AudioEngineProvider = ({ children }) => {
             addLog('error', errorMsg, { error: err.message });
             return false;
         }
-    }, [advancedSettings.gain, advancedSettings.highpass_frequency, advancedSettings.lowpass_frequency, refreshDevices, addLog]);
+    }, [advancedSettings.gain, advancedSettings.highpass_frequency, advancedSettings.lowpass_frequency, refreshDevices, addLog, loadWorklets, workletsLoaded]);
+
+    // Build and connect the audio processing graph
+    const connectAudioGraph = useCallback(() => {
+        if (!sourceNodeRef.current || !audioContextRef.current) return;
+
+        try {
+            // Disconnect all existing connections
+            try {
+                sourceNodeRef.current.disconnect();
+            } catch (e) { /* Ignore */ }
+            
+            eqFiltersRef.current.forEach(filter => {
+                try { filter.disconnect(); } catch (e) { /* Ignore */ }
+            });
+            
+            if (highpassFilterRef.current) {
+                try { highpassFilterRef.current.disconnect(); } catch (e) { /* Ignore */ }
+            }
+            if (lowpassFilterRef.current) {
+                try { lowpassFilterRef.current.disconnect(); } catch (e) { /* Ignore */ }
+            }
+            if (noiseReductionNodeRef.current) {
+                try { noiseReductionNodeRef.current.disconnect(); } catch (e) { /* Ignore */ }
+            }
+            if (voiceIsolationNodeRef.current) {
+                try { voiceIsolationNodeRef.current.disconnect(); } catch (e) { /* Ignore */ }
+            }
+            if (gainNodeRef.current) {
+                try { gainNodeRef.current.disconnect(); } catch (e) { /* Ignore */ }
+            }
+            if (analyserNodeRef.current) {
+                try { analyserNodeRef.current.disconnect(); } catch (e) { /* Ignore */ }
+            }
+
+            // Build the audio graph:
+            // Source -> [Highpass] -> [Noise Reduction] -> [Voice Isolation] -> EQ -> [Lowpass] -> Gain -> Analyser -> Destination
+            
+            let currentNode = sourceNodeRef.current;
+
+            // Optional highpass filter
+            if (advancedSettings.highpass_enabled && highpassFilterRef.current) {
+                currentNode.connect(highpassFilterRef.current);
+                currentNode = highpassFilterRef.current;
+            }
+
+            // Noise reduction worklet (if available and enabled)
+            if (noiseReductionNodeRef.current && advancedSettings.noise_reduction > 0) {
+                currentNode.connect(noiseReductionNodeRef.current);
+                currentNode = noiseReductionNodeRef.current;
+            }
+
+            // Voice isolation worklet (if available and enabled)
+            if (voiceIsolationNodeRef.current && advancedSettings.voice_isolation > 0) {
+                currentNode.connect(voiceIsolationNodeRef.current);
+                currentNode = voiceIsolationNodeRef.current;
+            }
+
+            // EQ chain
+            eqFiltersRef.current.forEach(filter => {
+                currentNode.connect(filter);
+                currentNode = filter;
+            });
+
+            // Optional lowpass filter
+            if (advancedSettings.lowpass_enabled && lowpassFilterRef.current) {
+                currentNode.connect(lowpassFilterRef.current);
+                currentNode = lowpassFilterRef.current;
+            }
+
+            // Gain -> Analyser -> Destination
+            currentNode.connect(gainNodeRef.current);
+            gainNodeRef.current.connect(analyserNodeRef.current);
+            analyserNodeRef.current.connect(audioContextRef.current.destination);
+
+            addLog('info', 'Audio graph connected');
+        } catch (err) {
+            addLog('error', 'Failed to connect audio graph', { error: err.message });
+        }
+    }, [advancedSettings.highpass_enabled, advancedSettings.lowpass_enabled, advancedSettings.noise_reduction, advancedSettings.voice_isolation, addLog]);
 
     // Start listening to audio input
     const startListening = useCallback(async () => {
@@ -181,32 +319,8 @@ export const AudioEngineProvider = ({ children }) => {
             mediaStreamRef.current = await navigator.mediaDevices.getUserMedia(constraints);
             sourceNodeRef.current = audioContextRef.current.createMediaStreamSource(mediaStreamRef.current);
 
-            // Connect the audio graph:
-            // Source -> Highpass -> EQ Filters -> Lowpass -> Gain -> Analyser -> Destination
-            let currentNode = sourceNodeRef.current;
-
-            // Optional highpass
-            if (advancedSettings.highpass_enabled) {
-                currentNode.connect(highpassFilterRef.current);
-                currentNode = highpassFilterRef.current;
-            }
-
-            // EQ chain
-            eqFiltersRef.current.forEach(filter => {
-                currentNode.connect(filter);
-                currentNode = filter;
-            });
-
-            // Optional lowpass
-            if (advancedSettings.lowpass_enabled) {
-                currentNode.connect(lowpassFilterRef.current);
-                currentNode = lowpassFilterRef.current;
-            }
-
-            // Gain -> Analyser -> Destination
-            currentNode.connect(gainNodeRef.current);
-            gainNodeRef.current.connect(analyserNodeRef.current);
-            analyserNodeRef.current.connect(audioContextRef.current.destination);
+            // Connect the audio graph
+            connectAudioGraph();
 
             setIsListening(true);
             setError(null);
@@ -214,7 +328,7 @@ export const AudioEngineProvider = ({ children }) => {
 
             // Start level metering
             const updateLevel = () => {
-                if (analyserNodeRef.current && isListening) {
+                if (analyserNodeRef.current) {
                     const dataArray = new Uint8Array(analyserNodeRef.current.frequencyBinCount);
                     analyserNodeRef.current.getByteFrequencyData(dataArray);
                     const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
@@ -231,7 +345,7 @@ export const AudioEngineProvider = ({ children }) => {
             addLog('error', errorMsg, { error: err.message });
             return false;
         }
-    }, [selectedDevice, advancedSettings.highpass_enabled, advancedSettings.lowpass_enabled, initializeAudio, addLog, isListening]);
+    }, [selectedDevice, initializeAudio, connectAudioGraph, addLog]);
 
     // Stop listening
     const stopListening = useCallback(() => {
@@ -256,6 +370,7 @@ export const AudioEngineProvider = ({ children }) => {
 
             setIsListening(false);
             setInputLevel(0);
+            setNoiseProfileReady(false);
             addLog('info', 'Audio listening stopped');
             return true;
         } catch (err) {
@@ -263,45 +378,6 @@ export const AudioEngineProvider = ({ children }) => {
             return false;
         }
     }, [addLog]);
-
-    // Reconnect audio graph when settings change
-    const reconnectAudioGraph = useCallback(() => {
-        if (!isListening || !sourceNodeRef.current) return;
-
-        try {
-            // Disconnect everything first
-            sourceNodeRef.current.disconnect();
-            eqFiltersRef.current.forEach(filter => filter.disconnect());
-            highpassFilterRef.current.disconnect();
-            lowpassFilterRef.current.disconnect();
-            gainNodeRef.current.disconnect();
-            analyserNodeRef.current.disconnect();
-
-            // Reconnect with new settings
-            let currentNode = sourceNodeRef.current;
-
-            if (advancedSettings.highpass_enabled) {
-                currentNode.connect(highpassFilterRef.current);
-                currentNode = highpassFilterRef.current;
-            }
-
-            eqFiltersRef.current.forEach(filter => {
-                currentNode.connect(filter);
-                currentNode = filter;
-            });
-
-            if (advancedSettings.lowpass_enabled) {
-                currentNode.connect(lowpassFilterRef.current);
-                currentNode = lowpassFilterRef.current;
-            }
-
-            currentNode.connect(gainNodeRef.current);
-            gainNodeRef.current.connect(analyserNodeRef.current);
-            analyserNodeRef.current.connect(audioContextRef.current.destination);
-        } catch (err) {
-            addLog('error', 'Failed to reconnect audio graph', { error: err.message });
-        }
-    }, [isListening, advancedSettings.highpass_enabled, advancedSettings.lowpass_enabled, addLog]);
 
     // Update EQ settings
     const updateEQ = useCallback((band, value) => {
@@ -342,14 +418,50 @@ export const AudioEngineProvider = ({ children }) => {
                     lowpassFilterRef.current.frequency.value = value;
                 }
                 break;
+            case 'noise_reduction':
+                if (noiseReductionNodeRef.current) {
+                    noiseReductionNodeRef.current.port.postMessage({ type: 'setReduction', value });
+                    if (value > 0 && !noiseProfileReady) {
+                        addLog('info', 'Noise reduction enabled - learning noise profile');
+                    }
+                }
+                // Reconnect graph if enabling/disabling
+                if ((value > 0) !== (advancedSettings.noise_reduction > 0)) {
+                    setTimeout(() => {
+                        if (isListening) connectAudioGraph();
+                    }, 50);
+                }
+                break;
+            case 'voice_isolation':
+                if (voiceIsolationNodeRef.current) {
+                    voiceIsolationNodeRef.current.port.postMessage({ type: 'setIsolation', value });
+                }
+                // Reconnect graph if enabling/disabling
+                if ((value > 0) !== (advancedSettings.voice_isolation > 0)) {
+                    setTimeout(() => {
+                        if (isListening) connectAudioGraph();
+                    }, 50);
+                }
+                break;
             case 'highpass_enabled':
             case 'lowpass_enabled':
-                reconnectAudioGraph();
+                if (isListening) {
+                    connectAudioGraph();
+                }
                 break;
             default:
                 break;
         }
-    }, [reconnectAudioGraph]);
+    }, [connectAudioGraph, isListening, noiseProfileReady, advancedSettings.noise_reduction, advancedSettings.voice_isolation, addLog]);
+
+    // Trigger noise profile re-learning
+    const learnNoiseProfile = useCallback(() => {
+        if (noiseReductionNodeRef.current) {
+            noiseReductionNodeRef.current.port.postMessage({ type: 'learnNoise' });
+            setNoiseProfileReady(false);
+            addLog('info', 'Re-learning noise profile...');
+        }
+    }, [addLog]);
 
     // Load preset
     const loadPreset = useCallback((preset) => {
@@ -460,7 +572,6 @@ export const AudioEngineProvider = ({ children }) => {
         const filename = `audioforge-${timestamp}.${format === 'mp3' ? 'webm' : 'wav'}`;
 
         // For simplicity, we save as webm (browser native) and rename
-        // Full conversion would require server-side or Web Assembly
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -513,6 +624,8 @@ export const AudioEngineProvider = ({ children }) => {
         recordingDuration,
         error,
         logs,
+        workletsLoaded,
+        noiseProfileReady,
 
         // Actions
         initializeAudio,
@@ -530,6 +643,7 @@ export const AudioEngineProvider = ({ children }) => {
         getAnalyserData,
         addLog,
         clearLogs,
+        learnNoiseProfile,
     };
 
     return (
