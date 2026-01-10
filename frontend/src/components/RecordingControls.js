@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
-import { Circle, Square, Download, CloudUpload, Loader2 } from 'lucide-react';
+import { Circle, Square, Download, CloudUpload, Loader2, Trash2, RotateCcw } from 'lucide-react';
 import RecordingHistory from './RecordingHistory';
 import { SyncStatus } from './UserMenu';
 import axios from 'axios';
@@ -41,6 +41,21 @@ const RecordingControls = () => {
             return;
         }
         await startRecording();
+    };
+
+    // Discard current recording and restart
+    const handleDiscardAndRestart = async () => {
+        await stopRecording(); // Stop without saving
+        addLog('info', 'Recording discarded');
+        // Restart recording immediately
+        await startRecording();
+        addLog('info', 'Recording restarted');
+    };
+
+    // Discard current recording without restarting
+    const handleDiscard = async () => {
+        await stopRecording(); // Stop without saving
+        addLog('info', 'Recording discarded');
     };
 
     const handleStopAndSave = async () => {
