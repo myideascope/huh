@@ -140,10 +140,15 @@ const RecordingControls = () => {
 
     return (
         <div className="control-card space-y-4" data-testid="recording-controls-panel">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Circle className="w-4 h-4" />
-                Recording
-            </h3>
+            <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Circle className="w-4 h-4" />
+                    Recording
+                </h3>
+            </div>
+            
+            {/* Sync Status */}
+            <SyncStatus />
 
             {/* Recording duration display */}
             <div
