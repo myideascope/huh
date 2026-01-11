@@ -1,6 +1,6 @@
 /* AudioForge App Styles */
 
-/* EQ Band Slider - Vertical */
+/* EQ Band Slider - Vertical (5-band legacy) */
 .eq-slider {
     writing-mode: vertical-lr;
     direction: rtl;
@@ -46,6 +46,72 @@
     cursor: pointer;
     box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
     border: 0;
+}
+
+/* 15-Band EQ Slider - Compact Vertical */
+.eq-slider-15 {
+    writing-mode: vertical-lr;
+    direction: rtl;
+    appearance: none;
+    width: 100%;
+    height: 112px;
+    background: transparent;
+    cursor: pointer;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.eq-slider-15::-webkit-slider-track {
+    width: 2px;
+    height: 100%;
+    background: transparent;
+    border-radius: 2px;
+}
+
+.eq-slider-15::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+    margin-left: -6px;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.eq-slider-15::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+}
+
+.eq-slider-15::-moz-range-track {
+    width: 2px;
+    height: 100%;
+    background: transparent;
+    border-radius: 2px;
+}
+
+.eq-slider-15::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+    border: 0;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.eq-slider-15::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+}
+
+/* 15-column grid for EQ */
+.grid-cols-15 {
+    grid-template-columns: repeat(15, minmax(0, 1fr));
 }
 
 /* Gain Slider */
