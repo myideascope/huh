@@ -87,30 +87,66 @@ const PresetsPanel = () => {
         }
     };
 
-    // Default presets
+    // Default presets with 15-band EQ
     const defaultPresets = [
         {
             id: 'default-flat',
             name: 'Flat',
             description: 'No adjustments',
-            equalizer: { band_60hz: 0, band_230hz: 0, band_910hz: 0, band_3600hz: 0, band_14000hz: 0 },
-            advanced: { noise_reduction: 0, voice_isolation: 0, gain: 1, highpass_enabled: false, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000 },
+            equalizer: { 
+                band_25hz: 0, band_40hz: 0, band_63hz: 0, band_100hz: 0, band_160hz: 0,
+                band_250hz: 0, band_400hz: 0, band_630hz: 0, band_1000hz: 0, band_1600hz: 0,
+                band_2500hz: 0, band_4000hz: 0, band_6300hz: 0, band_10000hz: 0, band_16000hz: 0
+            },
+            advanced: { noise_reduction: 0, noise_reduction_mode: 'basic', voice_isolation: 0, gain: 1, highpass_enabled: false, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000 },
             isDefault: true,
         },
         {
             id: 'default-voice',
             name: 'Voice Clarity',
-            description: 'Enhanced speech',
-            equalizer: { band_60hz: -4, band_230hz: 2, band_910hz: 4, band_3600hz: 3, band_14000hz: -2 },
-            advanced: { noise_reduction: 30, voice_isolation: 50, gain: 1.2, highpass_enabled: true, highpass_frequency: 100, lowpass_enabled: true, lowpass_frequency: 8000 },
+            description: 'Enhanced speech frequencies',
+            equalizer: { 
+                band_25hz: -6, band_40hz: -4, band_63hz: -2, band_100hz: 0, band_160hz: 2,
+                band_250hz: 3, band_400hz: 2, band_630hz: 3, band_1000hz: 4, band_1600hz: 5,
+                band_2500hz: 4, band_4000hz: 3, band_6300hz: 1, band_10000hz: -1, band_16000hz: -3
+            },
+            advanced: { noise_reduction: 30, noise_reduction_mode: 'ml', voice_isolation: 50, gain: 1.2, highpass_enabled: true, highpass_frequency: 100, lowpass_enabled: true, lowpass_frequency: 8000 },
             isDefault: true,
         },
         {
             id: 'default-boost',
             name: 'Distant Audio',
             description: 'Boost weak signals',
-            equalizer: { band_60hz: -2, band_230hz: 3, band_910hz: 5, band_3600hz: 4, band_14000hz: 2 },
-            advanced: { noise_reduction: 40, voice_isolation: 30, gain: 2.5, highpass_enabled: true, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000 },
+            equalizer: { 
+                band_25hz: -4, band_40hz: -2, band_63hz: 0, band_100hz: 2, band_160hz: 3,
+                band_250hz: 4, band_400hz: 5, band_630hz: 6, band_1000hz: 6, band_1600hz: 5,
+                band_2500hz: 4, band_4000hz: 3, band_6300hz: 2, band_10000hz: 1, band_16000hz: 0
+            },
+            advanced: { noise_reduction: 40, noise_reduction_mode: 'ml', voice_isolation: 30, gain: 2.5, highpass_enabled: true, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000 },
+            isDefault: true,
+        },
+        {
+            id: 'default-bass-boost',
+            name: 'Bass Boost',
+            description: 'Enhanced low frequencies',
+            equalizer: { 
+                band_25hz: 8, band_40hz: 7, band_63hz: 6, band_100hz: 5, band_160hz: 3,
+                band_250hz: 1, band_400hz: 0, band_630hz: 0, band_1000hz: 0, band_1600hz: 0,
+                band_2500hz: 0, band_4000hz: 0, band_6300hz: 0, band_10000hz: 0, band_16000hz: 0
+            },
+            advanced: { noise_reduction: 0, noise_reduction_mode: 'basic', voice_isolation: 0, gain: 1, highpass_enabled: false, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000 },
+            isDefault: true,
+        },
+        {
+            id: 'default-treble-boost',
+            name: 'Treble Boost',
+            description: 'Enhanced high frequencies',
+            equalizer: { 
+                band_25hz: 0, band_40hz: 0, band_63hz: 0, band_100hz: 0, band_160hz: 0,
+                band_250hz: 0, band_400hz: 0, band_630hz: 1, band_1000hz: 2, band_1600hz: 3,
+                band_2500hz: 4, band_4000hz: 5, band_6300hz: 6, band_10000hz: 7, band_16000hz: 6
+            },
+            advanced: { noise_reduction: 0, noise_reduction_mode: 'basic', voice_isolation: 0, gain: 1, highpass_enabled: false, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000 },
             isDefault: true,
         },
     ];
