@@ -261,47 +261,58 @@ const RecordingControls = () => {
                     </Button>
                 ) : (
                     <>
-                        {/* Discard & Restart / Discard buttons */}
+                        {/* Row 1: Restart / Discard */}
                         <div className="flex gap-2">
                             <Button
                                 onClick={handleDiscardAndRestart}
                                 variant="outline"
+                                size="sm"
                                 className="flex-1 border-accent/50 text-accent hover:bg-accent/10"
                                 data-testid="discard-restart-btn"
                             >
-                                <RotateCcw className="w-4 h-4 mr-2" />
+                                <RotateCcw className="w-3 h-3 mr-1" />
                                 Restart
                             </Button>
                             <Button
                                 onClick={handleDiscard}
                                 variant="outline"
+                                size="sm"
                                 className="flex-1 border-destructive/50 text-destructive hover:bg-destructive/10"
                                 data-testid="discard-btn"
                             >
-                                <Trash2 className="w-4 h-4 mr-2" />
+                                <Trash2 className="w-3 h-3 mr-1" />
                                 Discard
                             </Button>
                         </div>
                         
-                        {/* Stop & Save button */}
-                        <Button
-                            onClick={handleStopAndSave}
-                            disabled={isUploading}
-                            className="w-full btn-primary"
-                            data-testid="stop-save-btn"
-                        >
-                            {isUploading ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Uploading...
-                                </>
-                            ) : (
-                                <>
-                                    <Square className="w-4 h-4 mr-2 fill-current" />
-                                    Stop & Save
-                                </>
-                            )}
-                        </Button>
+                        {/* Row 2: Save & Restart / Stop & Save */}
+                        <div className="flex gap-2">
+                            <Button
+                                onClick={handleSaveAndRestart}
+                                disabled={isUploading}
+                                variant="outline"
+                                className="flex-1 border-secondary/50 text-secondary hover:bg-secondary/10"
+                                data-testid="save-restart-btn"
+                            >
+                                <CloudUpload className="w-4 h-4 mr-1" />
+                                Save & Restart
+                            </Button>
+                            <Button
+                                onClick={handleStopAndSave}
+                                disabled={isUploading}
+                                className="flex-1 btn-primary"
+                                data-testid="stop-save-btn"
+                            >
+                                {isUploading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <>
+                                        <Square className="w-4 h-4 mr-1 fill-current" />
+                                        Stop & Save
+                                    </>
+                                )}
+                            </Button>
+                        </div>
                     </>
                 )}
             </div>
