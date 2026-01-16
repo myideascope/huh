@@ -157,12 +157,13 @@ const Dashboard = () => {
                     <div className="lg:col-span-6 space-y-6">
                         <Visualizer />
                         <Equalizer />
+                        {/* Recording Controls - Below EQ */}
+                        <RecordingControls />
                     </div>
 
-                    {/* Right Column - Advanced Filters & Recording */}
+                    {/* Right Column - Advanced Filters */}
                     <div className="lg:col-span-3 space-y-6">
                         <AdvancedFilters />
-                        <RecordingControls />
                     </div>
 
                     {/* Bottom - Logs (Full Width) */}
