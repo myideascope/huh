@@ -58,6 +58,16 @@ const RecordingControls = () => {
         addLog('info', 'Recording discarded');
     };
 
+    // Save current recording and restart
+    const handleSaveAndRestart = async () => {
+        await handleStopAndSave();
+        // Start new recording after save completes
+        setTimeout(async () => {
+            await startRecording();
+            addLog('info', 'New recording started');
+        }, 100);
+    };
+
     const handleStopAndSave = async () => {
         const result = await stopRecording();
         if (!result) {
