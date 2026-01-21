@@ -212,7 +212,7 @@ const PresetsPanel = () => {
                 </Dialog>
             </div>
 
-            <ScrollArea className="h-48" data-testid="presets-list">
+            <ScrollArea className="h-80" data-testid="presets-list">
                 <div className="space-y-2 pr-4">
                     {loading ? (
                         <div className="text-sm text-muted-foreground text-center py-4">
