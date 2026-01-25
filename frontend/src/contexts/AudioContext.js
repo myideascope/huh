@@ -66,6 +66,7 @@ export const AudioEngineProvider = ({ children }) => {
     const [noiseProfileReady, setNoiseProfileReady] = useState(false);
     const [mlNoiseReductionReady, setMlNoiseReductionReady] = useState(false);
     const [vadProbability, setVadProbability] = useState(0);
+    const [humanVoiceReady, setHumanVoiceReady] = useState(false);
 
     // Refs for Web Audio API
     const audioContextRef = useRef(null);
@@ -78,6 +79,7 @@ export const AudioEngineProvider = ({ children }) => {
     const noiseReductionNodeRef = useRef(null);
     const rnnoiseNodeRef = useRef(null);  // ML-based noise reduction
     const voiceIsolationNodeRef = useRef(null);
+    const humanVoiceNodeRef = useRef(null);  // Human voice focus DSP
     const mediaStreamRef = useRef(null);
     const mediaRecorderRef = useRef(null);
     const recordedChunksRef = useRef([]);
