@@ -40,6 +40,13 @@ const DEFAULT_ADVANCED = {
     highpass_frequency: 80,
     lowpass_enabled: false,
     lowpass_frequency: 16000,
+    // Human voice focus DSP settings
+    human_focus: 0,           // 0-100: Master control for human voice isolation
+    formant_boost: 0,         // 0-100: Boost human voice formant frequencies
+    presence_boost: 0,        // 0-100: Boost speech clarity range (2-5kHz)
+    de_esser: 0,              // 0-100: Reduce harsh sibilance
+    rumble_filter: false,     // Remove sub-bass rumble
+    air_cut: false,           // Cut high frequencies above speech range
 };
 
 export const AudioEngineProvider = ({ children }) => {
