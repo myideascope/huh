@@ -9,7 +9,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
@@ -23,7 +23,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/health",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/health",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
@@ -37,7 +37,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/auth/me",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/auth/me",
         "expected_status": 401,
         "actual_status": 401,
         "response": {
@@ -50,7 +50,7 @@
       "success": true,
       "details": {
         "method": "POST",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/auth/logout",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/auth/logout",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
@@ -63,7 +63,7 @@
       "success": true,
       "details": {
         "method": "POST",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/auth/session",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/auth/session",
         "expected_status": 401,
         "actual_status": 401,
         "response": {
@@ -76,7 +76,7 @@
       "success": true,
       "details": {
         "method": "POST",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/auth/session",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/auth/session",
         "expected_status": 400,
         "actual_status": 400,
         "response": {
@@ -89,7 +89,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/presets",
         "expected_status": 200,
         "actual_status": 200,
         "response": []
@@ -100,7 +100,7 @@
       "success": true,
       "details": {
         "method": "POST",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/presets",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
@@ -133,7 +133,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/d6d081a1-2537-4ef0-81a8-0600709cba94",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/presets/d6d081a1-2537-4ef0-81a8-0600709cba94",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
@@ -166,7 +166,7 @@
       "success": true,
       "details": {
         "method": "PUT",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/d6d081a1-2537-4ef0-81a8-0600709cba94",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/presets/d6d081a1-2537-4ef0-81a8-0600709cba94",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
@@ -199,7 +199,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/presets",
         "expected_status": 200,
         "actual_status": 200,
         "response": [
@@ -234,7 +234,7 @@
       "success": true,
       "details": {
         "method": "DELETE",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/d6d081a1-2537-4ef0-81a8-0600709cba94",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/presets/d6d081a1-2537-4ef0-81a8-0600709cba94",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
@@ -248,7 +248,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/d6d081a1-2537-4ef0-81a8-0600709cba94",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/presets/d6d081a1-2537-4ef0-81a8-0600709cba94",
         "expected_status": 404,
         "actual_status": 404,
         "response": {
@@ -261,7 +261,7 @@
       "success": true,
       "details": {
         "method": "POST",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/logs",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/logs",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
@@ -281,7 +281,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/logs",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/logs",
         "expected_status": 200,
         "actual_status": 200,
         "response": [
@@ -303,7 +303,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/logs?limit=10",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/logs?limit=10",
         "expected_status": 200,
         "actual_status": 200,
         "response": [
@@ -325,7 +325,7 @@
       "success": true,
       "details": {
         "method": "DELETE",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/logs",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/logs",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
@@ -338,7 +338,7 @@
       "success": true,
       "details": {
         "method": "POST",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/recordings",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/recordings",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
@@ -360,7 +360,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/recordings",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/recordings",
         "expected_status": 200,
         "actual_status": 200,
         "response": [
@@ -396,7 +396,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/recordings?limit=5",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/recordings?limit=5",
         "expected_status": 200,
         "actual_status": 200,
         "response": [
@@ -432,7 +432,7 @@
       "success": true,
       "details": {
         "method": "POST",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/recordings",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/recordings",
         "expected_status": 200,
         "actual_status": 200,
         "response": {
@@ -454,7 +454,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/recordings",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/recordings",
         "expected_status": 200,
         "actual_status": 200,
         "response": [
@@ -502,7 +502,7 @@
       "success": true,
       "details": {
         "method": "POST",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/presets",
         "expected_status": 422,
         "actual_status": 422,
         "response": {
@@ -528,7 +528,7 @@
       "success": true,
       "details": {
         "method": "GET",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets/non-existent-id",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/presets/non-existent-id",
         "expected_status": 404,
         "actual_status": 404,
         "response": {
@@ -541,7 +541,7 @@
       "success": true,
       "details": {
         "method": "POST",
-        "url": "https://frequency-tuner-2.preview.emergentagent.com/api/presets",
+        "url": "https://speech-filter-dev.preview.emergentagent.com/api/presets",
         "expected_status": 422,
         "actual_status": 422,
         "response": {

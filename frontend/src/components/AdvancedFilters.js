@@ -14,7 +14,13 @@ import {
     CheckCircle, 
     Loader2,
     Brain,
-    Zap
+    Zap,
+    User,
+    Mic,
+    Sparkles,
+    AudioLines,
+    BellOff,
+    Wind
 } from 'lucide-react';
 
 const AdvancedFilters = () => {
@@ -25,6 +31,7 @@ const AdvancedFilters = () => {
         noiseProfileReady,
         mlNoiseReductionReady,
         vadProbability,
+        humanVoiceReady,
         learnNoiseProfile,
         isListening 
     } = useAudioEngine();
@@ -194,6 +201,133 @@ const AdvancedFilters = () => {
                         ? 'Bandpass + formant enhancement active' 
                         : 'Enhances speech frequencies (85Hz-3.4kHz)'}
                 </p>
+            </div>
+
+            {/* Human Voice Focus */}
+            <div className="space-y-3 pt-4 border-t border-border/30">
+                <div className="flex items-center justify-between">
+                    <Label className="label-text flex items-center gap-2">
+                        <User className="w-3 h-3" />
+                        Human Voice Focus
+                        {humanVoiceReady && (advancedSettings.human_focus > 0 || advancedSettings.formant_boost > 0 || advancedSettings.presence_boost > 0) && isListening && (
+                            <CheckCircle className="w-3 h-3 text-primary" />
+                        )}
+                    </Label>
+                    <span className="text-sm font-mono text-foreground" data-testid="human-focus-value">
+                        {advancedSettings.human_focus}%
+                    </span>
+                </div>
+                <Slider
+                    value={[advancedSettings.human_focus]}
+                    onValueChange={(value) => updateAdvanced('human_focus', value[0])}
+                    min={0}
+                    max={100}
+                    step={5}
+                    className="w-full"
+                    data-testid="human-focus-slider"
+                />
+                <p className="text-xs text-muted-foreground">
+                    {advancedSettings.human_focus > 0 && isListening
+                        ? 'Isolating human speech frequencies'
+                        : 'Master control for speech isolation DSP'}
+                </p>
+
+                {/* Sub-controls appear when human focus or any sub-control is active */}
+                {(advancedSettings.human_focus > 0 || advancedSettings.formant_boost > 0 || advancedSettings.presence_boost > 0 || advancedSettings.de_esser > 0 || advancedSettings.rumble_filter || advancedSettings.air_cut) && (
+                    <div className="space-y-4 pl-2 border-l-2 border-primary/20 ml-1">
+                        {/* Formant Boost */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-xs flex items-center gap-1.5 text-muted-foreground">
+                                    <Mic className="w-3 h-3" />
+                                    Formant Boost
+                                </Label>
+                                <span className="text-xs font-mono" data-testid="formant-boost-value">
+                                    {advancedSettings.formant_boost}%
+                                </span>
+                            </div>
+                            <Slider
+                                value={[advancedSettings.formant_boost]}
+                                onValueChange={(value) => updateAdvanced('formant_boost', value[0])}
+                                min={0}
+                                max={100}
+                                step={5}
+                                className="w-full"
+                                data-testid="formant-boost-slider"
+                            />
+                        </div>
+
+                        {/* Presence Boost */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-xs flex items-center gap-1.5 text-muted-foreground">
+                                    <Sparkles className="w-3 h-3" />
+                                    Presence / Clarity
+                                </Label>
+                                <span className="text-xs font-mono" data-testid="presence-boost-value">
+                                    {advancedSettings.presence_boost}%
+                                </span>
+                            </div>
+                            <Slider
+                                value={[advancedSettings.presence_boost]}
+                                onValueChange={(value) => updateAdvanced('presence_boost', value[0])}
+                                min={0}
+                                max={100}
+                                step={5}
+                                className="w-full"
+                                data-testid="presence-boost-slider"
+                            />
+                        </div>
+
+                        {/* De-esser */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-xs flex items-center gap-1.5 text-muted-foreground">
+                                    <BellOff className="w-3 h-3" />
+                                    De-esser
+                                </Label>
+                                <span className="text-xs font-mono" data-testid="de-esser-value">
+                                    {advancedSettings.de_esser}%
+                                </span>
+                            </div>
+                            <Slider
+                                value={[advancedSettings.de_esser]}
+                                onValueChange={(value) => updateAdvanced('de_esser', value[0])}
+                                min={0}
+                                max={100}
+                                step={5}
+                                className="w-full"
+                                data-testid="de-esser-slider"
+                            />
+                        </div>
+
+                        {/* Toggle row: Rumble Filter + Air Cut */}
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 flex-1">
+                                <Switch
+                                    checked={advancedSettings.rumble_filter}
+                                    onCheckedChange={(checked) => updateAdvanced('rumble_filter', checked)}
+                                    data-testid="rumble-filter-toggle"
+                                />
+                                <Label className="text-xs flex items-center gap-1 text-muted-foreground cursor-pointer">
+                                    <AudioLines className="w-3 h-3" />
+                                    Rumble Cut
+                                </Label>
+                            </div>
+                            <div className="flex items-center gap-2 flex-1">
+                                <Switch
+                                    checked={advancedSettings.air_cut}
+                                    onCheckedChange={(checked) => updateAdvanced('air_cut', checked)}
+                                    data-testid="air-cut-toggle"
+                                />
+                                <Label className="text-xs flex items-center gap-1 text-muted-foreground cursor-pointer">
+                                    <Wind className="w-3 h-3" />
+                                    Air Cut
+                                </Label>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Highpass Filter */}

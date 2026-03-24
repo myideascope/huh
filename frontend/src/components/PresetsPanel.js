@@ -223,7 +223,10 @@ const PresetsPanel = () => {
                             <div
                                 key={preset.id}
                                 onClick={() => handleLoadPreset(preset)}
-                                className={`preset-card flex items-center justify-between p-3 rounded-lg border cursor-pointer ${
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => e.key === 'Enter' && handleLoadPreset(preset)}
+                                className={`preset-card relative z-10 flex items-center justify-between p-3 rounded-lg border cursor-pointer select-none ${
                                     selectedPresetId === preset.id
                                         ? 'bg-primary/10 border-primary/50'
                                         : 'bg-muted/30 border-border/30 hover:border-border'
