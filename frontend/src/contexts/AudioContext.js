@@ -328,6 +328,9 @@ export const AudioEngineProvider = ({ children }) => {
             if (voiceIsolationNodeRef.current) {
                 try { voiceIsolationNodeRef.current.disconnect(); } catch (e) { /* Ignore */ }
             }
+            if (humanVoiceNodeRef.current) {
+                try { humanVoiceNodeRef.current.disconnect(); } catch (e) { /* Ignore */ }
+            }
             if (gainNodeRef.current) {
                 try { gainNodeRef.current.disconnect(); } catch (e) { /* Ignore */ }
             }
@@ -336,7 +339,7 @@ export const AudioEngineProvider = ({ children }) => {
             }
 
             // Build the audio graph:
-            // Source -> [Highpass] -> [Noise Reduction] -> [Voice Isolation] -> EQ -> [Lowpass] -> Gain -> Analyser -> Destination
+            // Source -> [Highpass] -> [Noise Reduction] -> [Voice Isolation] -> [Human Voice Focus] -> EQ -> [Lowpass] -> Gain -> Analyser -> Destination
             
             let currentNode = sourceNodeRef.current;
 
@@ -363,6 +366,18 @@ export const AudioEngineProvider = ({ children }) => {
             if (voiceIsolationNodeRef.current && advancedSettings.voice_isolation > 0) {
                 currentNode.connect(voiceIsolationNodeRef.current);
                 currentNode = voiceIsolationNodeRef.current;
+            }
+
+            // Human voice focus DSP (if any settings are active)
+            const humanVoiceActive = advancedSettings.human_focus > 0 || 
+                                     advancedSettings.formant_boost > 0 || 
+                                     advancedSettings.presence_boost > 0 ||
+                                     advancedSettings.de_esser > 0 ||
+                                     advancedSettings.rumble_filter ||
+                                     advancedSettings.air_cut;
+            if (humanVoiceNodeRef.current && humanVoiceActive) {
+                currentNode.connect(humanVoiceNodeRef.current);
+                currentNode = humanVoiceNodeRef.current;
             }
 
             // EQ chain
