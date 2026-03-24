@@ -140,6 +140,15 @@ export const AudioEngineProvider = ({ children }) => {
             await audioContext.audioWorklet.addModule('/worklets/voice-isolation-processor.js');
             addLog('success', 'Voice isolation processor loaded');
             
+            // Load human voice focus processor
+            try {
+                await audioContext.audioWorklet.addModule('/worklets/human-voice-processor.js');
+                addLog('success', 'Human voice focus processor loaded');
+                setHumanVoiceReady(true);
+            } catch (hvErr) {
+                addLog('warning', 'Human voice processor not available', { error: hvErr.message });
+            }
+            
             // Load RNNoise ML worklet
             try {
                 await audioContext.audioWorklet.addModule('/worklets/rnnoise-processor.js');
@@ -157,6 +166,7 @@ export const AudioEngineProvider = ({ children }) => {
             return false;
         }
     }, [addLog]);
+
 
     // Initialize audio context
     const initializeAudio = useCallback(async () => {
