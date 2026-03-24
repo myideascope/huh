@@ -98,7 +98,7 @@ const PresetsPanel = () => {
                 band_250hz: 0, band_400hz: 0, band_630hz: 0, band_1000hz: 0, band_1600hz: 0,
                 band_2500hz: 0, band_4000hz: 0, band_6300hz: 0, band_10000hz: 0, band_16000hz: 0
             },
-            advanced: { noise_reduction: 0, noise_reduction_mode: 'basic', voice_isolation: 0, gain: 1, highpass_enabled: false, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000 },
+            advanced: { noise_reduction: 0, noise_reduction_mode: 'basic', voice_isolation: 0, gain: 1, highpass_enabled: false, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000, human_focus: 0, formant_boost: 0, presence_boost: 0, de_esser: 0, rumble_filter: false, air_cut: false },
             isDefault: true,
         },
         {
@@ -110,7 +110,7 @@ const PresetsPanel = () => {
                 band_250hz: 3, band_400hz: 2, band_630hz: 3, band_1000hz: 4, band_1600hz: 5,
                 band_2500hz: 4, band_4000hz: 3, band_6300hz: 1, band_10000hz: -1, band_16000hz: -3
             },
-            advanced: { noise_reduction: 30, noise_reduction_mode: 'ml', voice_isolation: 50, gain: 1.2, highpass_enabled: true, highpass_frequency: 100, lowpass_enabled: true, lowpass_frequency: 8000 },
+            advanced: { noise_reduction: 30, noise_reduction_mode: 'ml', voice_isolation: 50, gain: 1.2, highpass_enabled: true, highpass_frequency: 100, lowpass_enabled: true, lowpass_frequency: 8000, human_focus: 40, formant_boost: 30, presence_boost: 35, de_esser: 20, rumble_filter: true, air_cut: false },
             isDefault: true,
         },
         {
@@ -122,7 +122,7 @@ const PresetsPanel = () => {
                 band_250hz: 4, band_400hz: 5, band_630hz: 6, band_1000hz: 6, band_1600hz: 5,
                 band_2500hz: 4, band_4000hz: 3, band_6300hz: 2, band_10000hz: 1, band_16000hz: 0
             },
-            advanced: { noise_reduction: 40, noise_reduction_mode: 'ml', voice_isolation: 30, gain: 2.5, highpass_enabled: true, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000 },
+            advanced: { noise_reduction: 40, noise_reduction_mode: 'ml', voice_isolation: 30, gain: 2.5, highpass_enabled: true, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000, human_focus: 60, formant_boost: 50, presence_boost: 40, de_esser: 15, rumble_filter: true, air_cut: true },
             isDefault: true,
         },
         {
@@ -134,7 +134,7 @@ const PresetsPanel = () => {
                 band_250hz: 1, band_400hz: 0, band_630hz: 0, band_1000hz: 0, band_1600hz: 0,
                 band_2500hz: 0, band_4000hz: 0, band_6300hz: 0, band_10000hz: 0, band_16000hz: 0
             },
-            advanced: { noise_reduction: 0, noise_reduction_mode: 'basic', voice_isolation: 0, gain: 1, highpass_enabled: false, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000 },
+            advanced: { noise_reduction: 0, noise_reduction_mode: 'basic', voice_isolation: 0, gain: 1, highpass_enabled: false, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000, human_focus: 0, formant_boost: 0, presence_boost: 0, de_esser: 0, rumble_filter: false, air_cut: false },
             isDefault: true,
         },
         {
@@ -146,7 +146,7 @@ const PresetsPanel = () => {
                 band_250hz: 0, band_400hz: 0, band_630hz: 1, band_1000hz: 2, band_1600hz: 3,
                 band_2500hz: 4, band_4000hz: 5, band_6300hz: 6, band_10000hz: 7, band_16000hz: 6
             },
-            advanced: { noise_reduction: 0, noise_reduction_mode: 'basic', voice_isolation: 0, gain: 1, highpass_enabled: false, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000 },
+            advanced: { noise_reduction: 0, noise_reduction_mode: 'basic', voice_isolation: 0, gain: 1, highpass_enabled: false, highpass_frequency: 80, lowpass_enabled: false, lowpass_frequency: 16000, human_focus: 0, formant_boost: 0, presence_boost: 0, de_esser: 0, rumble_filter: false, air_cut: false },
             isDefault: true,
         },
     ];
@@ -223,7 +223,10 @@ const PresetsPanel = () => {
                             <div
                                 key={preset.id}
                                 onClick={() => handleLoadPreset(preset)}
-                                className={`preset-card flex items-center justify-between p-3 rounded-lg border cursor-pointer ${
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => e.key === 'Enter' && handleLoadPreset(preset)}
+                                className={`preset-card relative z-10 flex items-center justify-between p-3 rounded-lg border cursor-pointer select-none ${
                                     selectedPresetId === preset.id
                                         ? 'bg-primary/10 border-primary/50'
                                         : 'bg-muted/30 border-border/30 hover:border-border'

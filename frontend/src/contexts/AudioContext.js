@@ -401,7 +401,7 @@ export const AudioEngineProvider = ({ children }) => {
         } catch (err) {
             addLog('error', 'Failed to connect audio graph', { error: err.message });
         }
-    }, [advancedSettings.highpass_enabled, advancedSettings.lowpass_enabled, advancedSettings.noise_reduction, advancedSettings.voice_isolation, addLog]);
+    }, [advancedSettings, addLog]);
 
     // Start listening to audio input
     const startListening = useCallback(async () => {
@@ -583,10 +583,62 @@ export const AudioEngineProvider = ({ children }) => {
                     connectAudioGraph();
                 }
                 break;
+            case 'human_focus':
+            case 'formant_boost':
+            case 'presence_boost':
+            case 'de_esser': {
+                // Send updated setting to the worklet
+                if (humanVoiceNodeRef.current) {
+                    const settingMap = {
+                        human_focus: 'humanFocus',
+                        formant_boost: 'formantBoost',
+                        presence_boost: 'presenceBoost',
+                        de_esser: 'deesserAmount',
+                    };
+                    humanVoiceNodeRef.current.port.postMessage({
+                        type: 'setSetting',
+                        setting: settingMap[setting],
+                        value,
+                    });
+                }
+                // Reconnect graph if transitioning between active/inactive
+                const wasActive = advancedSettings.human_focus > 0 ||
+                    advancedSettings.formant_boost > 0 ||
+                    advancedSettings.presence_boost > 0 ||
+                    advancedSettings.de_esser > 0 ||
+                    advancedSettings.rumble_filter ||
+                    advancedSettings.air_cut;
+                const willBeActive = (() => {
+                    const next = { ...advancedSettings, [setting]: value };
+                    return next.human_focus > 0 || next.formant_boost > 0 ||
+                        next.presence_boost > 0 || next.de_esser > 0 ||
+                        next.rumble_filter || next.air_cut;
+                })();
+                if (wasActive !== willBeActive && isListening) {
+                    setTimeout(() => connectAudioGraph(), 50);
+                }
+                break;
+            }
+            case 'rumble_filter':
+            case 'air_cut': {
+                if (humanVoiceNodeRef.current) {
+                    const settingMap = { rumble_filter: 'rumbleFilter', air_cut: 'airCut' };
+                    humanVoiceNodeRef.current.port.postMessage({
+                        type: 'setSetting',
+                        setting: settingMap[setting],
+                        value,
+                    });
+                }
+                // These toggles always require a graph reconnect
+                if (isListening) {
+                    setTimeout(() => connectAudioGraph(), 50);
+                }
+                break;
+            }
             default:
                 break;
         }
-    }, [connectAudioGraph, isListening, noiseProfileReady, advancedSettings.noise_reduction, advancedSettings.voice_isolation, advancedSettings.noise_reduction_mode, addLog]);
+    }, [connectAudioGraph, isListening, noiseProfileReady, advancedSettings, addLog]);
 
     // Trigger noise profile re-learning
     const learnNoiseProfile = useCallback(() => {
@@ -762,6 +814,7 @@ export const AudioEngineProvider = ({ children }) => {
         noiseProfileReady,
         mlNoiseReductionReady,
         vadProbability,
+        humanVoiceReady,
 
         // Actions
         initializeAudio,
