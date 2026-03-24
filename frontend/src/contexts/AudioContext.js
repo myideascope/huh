@@ -269,6 +269,17 @@ export const AudioEngineProvider = ({ children }) => {
                         'voice-isolation-processor'
                     );
                     
+                    // Create human voice focus worklet node
+                    try {
+                        humanVoiceNodeRef.current = new AudioWorkletNode(
+                            audioContextRef.current,
+                            'human-voice-processor'
+                        );
+                        addLog('info', 'Human voice focus worklet node created');
+                    } catch (hvErr) {
+                        addLog('warning', 'Human voice processor not available', { error: hvErr.message });
+                    }
+                    
                     addLog('success', 'Audio worklet nodes created');
                 } catch (err) {
                     addLog('warning', 'Worklet nodes unavailable, using basic processing', { error: err.message });
