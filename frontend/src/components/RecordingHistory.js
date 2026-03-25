@@ -34,7 +34,8 @@ import {
     Edit3,
     Check,
     X,
-    Loader2
+    Loader2,
+    MessageSquareText
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -49,6 +50,8 @@ const RecordingHistory = () => {
     const [editingId, setEditingId] = useState(null);
     const [editNotes, setEditNotes] = useState('');
     const [downloadingId, setDownloadingId] = useState(null);
+    const [transcribingId, setTranscribingId] = useState(null);
+    const [transcripts, setTranscripts] = useState({});
     const audioRef = React.useRef(null);
 
     // Fetch recordings from backend
@@ -203,6 +206,35 @@ const RecordingHistory = () => {
         setEditNotes('');
     };
 
+    // Transcribe recording
+    const handleTranscribe = async (recording) => {
+        try {
+            setTranscribingId(recording.id);
+            // Check if transcript already exists
+            const existingRes = await axios.get(`${API}/recordings/${recording.id}/transcript`);
+            if (existingRes.data?.transcript) {
+                setTranscripts(prev => ({ ...prev, [recording.id]: existingRes.data }));
+                addLog('info', 'Loaded existing transcript');
+                return;
+            }
+        } catch (err) {
+            // No existing transcript, continue to transcribe
+        }
+        try {
+            const res = await axios.post(`${API}/transcribe/recording/${recording.id}`);
+            if (res.data?.text) {
+                setTranscripts(prev => ({ ...prev, [recording.id]: res.data }));
+                addLog('success', `Transcribed: ${recording.filename}`);
+            } else {
+                addLog('warning', 'No speech detected in recording');
+            }
+        } catch (err) {
+            addLog('error', 'Transcription failed', { error: err.message });
+        } finally {
+            setTranscribingId(null);
+        }
+    };
+
     // Cleanup on dialog close
     useEffect(() => {
         if (!dialogOpen && audioRef.current) {
@@ -266,6 +298,8 @@ const RecordingHistory = () => {
                                                 isPlaying={playingId === recording.id}
                                                 isEditing={editingId === recording.id}
                                                 isDownloading={downloadingId === recording.id}
+                                                isTranscribing={transcribingId === recording.id}
+                                                transcript={transcripts[recording.id]}
                                                 editNotes={editNotes}
                                                 setEditNotes={setEditNotes}
                                                 onPlay={() => handlePlay(recording)}
@@ -274,6 +308,7 @@ const RecordingHistory = () => {
                                                 onStartEdit={() => startEditNotes(recording)}
                                                 onSaveNotes={() => saveNotes(recording.id)}
                                                 onCancelEdit={cancelEdit}
+                                                onTranscribe={() => handleTranscribe(recording)}
                                                 formatDuration={formatDuration}
                                                 formatFileSize={formatFileSize}
                                                 formatDate={formatDate}
@@ -329,6 +364,8 @@ const RecordingItem = ({
     isPlaying,
     isEditing,
     isDownloading,
+    isTranscribing = false,
+    transcript = null,
     editNotes,
     setEditNotes,
     onPlay,
@@ -337,6 +374,7 @@ const RecordingItem = ({
     onStartEdit,
     onSaveNotes,
     onCancelEdit,
+    onTranscribe,
     formatDuration,
     formatFileSize,
     formatDate,
@@ -439,6 +477,39 @@ const RecordingItem = ({
                             <Edit3 className="w-3 h-3 mr-1" />
                             Add notes
                         </Button>
+                    )}
+
+                    {/* Transcription section */}
+                    {!isLocalOnly && (
+                        <div className="mt-3">
+                            {transcript?.text ? (
+                                <div className="p-2 rounded bg-muted/40 border border-border/30">
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <MessageSquareText className="w-3 h-3 text-primary" />
+                                        <span className="text-xs font-medium text-primary">Transcript</span>
+                                    </div>
+                                    <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
+                                        {transcript.text}
+                                    </p>
+                                </div>
+                            ) : (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={onTranscribe}
+                                    disabled={isTranscribing}
+                                    className="h-6 px-2 text-xs text-muted-foreground"
+                                    data-testid={`transcribe-recording-${recording.id}`}
+                                >
+                                    {isTranscribing ? (
+                                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                    ) : (
+                                        <MessageSquareText className="w-3 h-3 mr-1" />
+                                    )}
+                                    {isTranscribing ? 'Transcribing...' : 'Transcribe'}
+                                </Button>
+                            )}
+                        </div>
                     )}
                 </div>
 

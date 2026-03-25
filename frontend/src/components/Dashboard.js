@@ -5,6 +5,7 @@ import Equalizer from './Equalizer';
 import AdvancedFilters from './AdvancedFilters';
 import Visualizer from './Visualizer';
 import RecordingControls from './RecordingControls';
+import TranscriptionPanel from './TranscriptionPanel';
 import PresetsPanel from './PresetsPanel';
 import LogsPanel from './LogsPanel';
 import UserMenu from './UserMenu';
@@ -155,6 +156,8 @@ const Dashboard = () => {
 
                     {/* Center Column - Visualizer & EQ */}
                     <div className="lg:col-span-6 space-y-6">
+                        {/* Transcription */}
+                        <TranscriptionPanel />
                         <Visualizer />
                         <Equalizer />
                         {/* Recording Controls - Below EQ */}

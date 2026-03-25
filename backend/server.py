@@ -12,6 +12,9 @@ import uuid
 from datetime import datetime, timezone, timedelta
 import base64
 import httpx
+import tempfile
+import io
+from emergentintegrations.llm.openai import OpenAISpeechToText
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -695,6 +698,145 @@ async def delete_recording(recording_id: str):
     except Exception as e:
         logger.error(f"Failed to delete recording {recording_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# =============== TRANSCRIPTION ===============
+
+stt_client = OpenAISpeechToText(api_key=os.environ.get("EMERGENT_LLM_KEY", ""))
+
+@api_router.post("/transcribe/live")
+async def transcribe_live_chunk(request: Request):
+    """Transcribe a live audio chunk (base64 webm)"""
+    try:
+        body = await request.json()
+        audio_b64 = body.get("audio_data", "")
+        
+        if not audio_b64:
+            raise HTTPException(status_code=400, detail="No audio data provided")
+        
+        # Strip data URL prefix if present
+        if "," in audio_b64:
+            audio_b64 = audio_b64.split(",")[1]
+        
+        audio_bytes = base64.b64decode(audio_b64)
+        
+        if len(audio_bytes) < 1000:
+            return {"text": "", "status": "chunk_too_small"}
+        
+        # Write to temp file (Whisper needs a file-like object with a name)
+        with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as tmp:
+            tmp.write(audio_bytes)
+            tmp_path = tmp.name
+        
+        try:
+            with open(tmp_path, "rb") as audio_file:
+                response = await stt_client.transcribe(
+                    file=audio_file,
+                    model="whisper-1",
+                    response_format="json",
+                    language="en",
+                )
+            text = response.text.strip() if response and response.text else ""
+            return {"text": text, "status": "ok"}
+        finally:
+            os.unlink(tmp_path)
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Live transcription error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/transcribe/recording/{recording_id}")
+async def transcribe_recording(recording_id: str):
+    """Transcribe a saved recording and store the transcript"""
+    try:
+        recording = await db.recordings.find_one({"id": recording_id}, {"_id": 0})
+        if not recording:
+            raise HTTPException(status_code=404, detail="Recording not found")
+        
+        if not recording.get("audio_data"):
+            raise HTTPException(status_code=400, detail="No audio data available")
+        
+        audio_b64 = recording["audio_data"]
+        if "," in audio_b64:
+            audio_b64 = audio_b64.split(",")[1]
+        
+        audio_bytes = base64.b64decode(audio_b64)
+        fmt = recording.get("format", "webm")
+        
+        with tempfile.NamedTemporaryFile(suffix=f".{fmt}", delete=False) as tmp:
+            tmp.write(audio_bytes)
+            tmp_path = tmp.name
+        
+        try:
+            with open(tmp_path, "rb") as audio_file:
+                response = await stt_client.transcribe(
+                    file=audio_file,
+                    model="whisper-1",
+                    response_format="verbose_json",
+                    language="en",
+                    timestamp_granularities=["segment"],
+                )
+            
+            text = response.text.strip() if response and response.text else ""
+            segments = []
+            if hasattr(response, "segments") and response.segments:
+                segments = [
+                    {"start": s.start, "end": s.end, "text": s.text.strip()}
+                    for s in response.segments
+                ]
+            
+            # Save transcript to the recording document
+            await db.recordings.update_one(
+                {"id": recording_id},
+                {"$set": {
+                    "transcript": text,
+                    "transcript_segments": segments,
+                    "transcribed_at": datetime.now(timezone.utc).isoformat(),
+                }}
+            )
+            
+            logger.info(f"Transcribed recording {recording_id}: {len(text)} chars")
+            return {
+                "text": text,
+                "segments": segments,
+                "recording_id": recording_id,
+                "status": "ok",
+            }
+        finally:
+            os.unlink(tmp_path)
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Recording transcription error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/recordings/{recording_id}/transcript")
+async def get_recording_transcript(recording_id: str):
+    """Get saved transcript for a recording"""
+    try:
+        recording = await db.recordings.find_one(
+            {"id": recording_id},
+            {"_id": 0, "transcript": 1, "transcript_segments": 1, "transcribed_at": 1, "id": 1}
+        )
+        if not recording:
+            raise HTTPException(status_code=404, detail="Recording not found")
+        
+        return {
+            "recording_id": recording.get("id"),
+            "transcript": recording.get("transcript"),
+            "segments": recording.get("transcript_segments"),
+            "transcribed_at": recording.get("transcribed_at"),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get transcript for {recording_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # Include the router in the main app
 app.include_router(api_router)

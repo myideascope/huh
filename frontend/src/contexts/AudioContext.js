@@ -289,6 +289,10 @@ export const AudioEngineProvider = ({ children }) => {
             await refreshDevices();
             setIsInitialized(true);
             setError(null);
+            
+            // Expose audio context and gain for transcription panel
+            window.__audioForgeCtx = audioContextRef.current;
+            
             addLog('success', 'Audio engine initialized successfully');
             return true;
         } catch (err) {
@@ -396,6 +400,9 @@ export const AudioEngineProvider = ({ children }) => {
             currentNode.connect(gainNodeRef.current);
             gainNodeRef.current.connect(analyserNodeRef.current);
             analyserNodeRef.current.connect(audioContextRef.current.destination);
+
+            // Expose gain node for transcription panel
+            window.__audioForgeGain = gainNodeRef.current;
 
             addLog('info', 'Audio graph connected');
         } catch (err) {
